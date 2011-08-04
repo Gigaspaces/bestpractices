@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 
 public class CalculateNPVUtil {
     static Logger logger = Logger.getLogger(CalculateNPVUtil.class.getName());
+    static Random random = new Random();
 
     //calculate Net present value for the last 6 years - http://en.wikipedia.org/wiki/Net_present_value
     static public void calculateNPV(double rate, Trade trade) {
@@ -32,22 +33,22 @@ public class CalculateNPVUtil {
     static public Trade[] getTradesFromDB(ArrayList<Integer> missingIDs, GigaSpace gigaspace) {
         Trade[] trades = new Trade[missingIDs.size()];
         int i = 0;
-        for(Integer id:missingIDs) {
-            trades[i]=generateTrade(id);
+        for (Integer id : missingIDs) {
+            trades[i] = generateTrade(id);
             i++;
-            LockSupport.parkNanos(10*1000000); // 1 milli = 1000000 nanoseconds.
+            LockSupport.parkNanos(10 * 1000000); // 1 milli = 1000000 nanoseconds.
         }
         gigaspace.writeMultiple(trades);
         return trades;
     }
 
-    static public HashMap<String, Double> execute(GigaSpace gigaspace, Integer tradeIds[], int partitionID, double rate) throws Exception {
+    static public HashMap<String, Double> execute(GigaSpace tradeDataSpaceCache, GigaSpace tradeDataSpace, Integer tradeIds[], int partitionID, double rate) throws Exception {
 
         HashMap<String, Double> rtnVal = new HashMap<String, Double>();
 
         List<Trade> tradesList = new ArrayList<Trade>();
         try {
-            ReadByIdsResult<Trade> res = gigaspace.readByIds(Trade.class, tradeIds);
+            ReadByIdsResult<Trade> res = tradeDataSpaceCache.readByIds(Trade.class, tradeIds);
 
             // checking for null results and getting missing Trades objects from external Data source
             Trade resArr[] = res.getResultsArray();
@@ -60,22 +61,16 @@ public class CalculateNPVUtil {
             Trade missingTrades[] = null;
             if (missingIDs.size() > 0) {
                 logger.fine(">>>> Partition:" + partitionID + " - Loading missing Trades from the database for IDs:" + missingIDs);
-                missingTrades = getTradesFromDB(missingIDs, gigaspace);
+                missingTrades = getTradesFromDB(missingIDs, tradeDataSpace);
             }
 
-            Iterator<Trade> iter = res.iterator();
-            // ReadByIdsResult - Holds iterable results of the readByIds operation.
-            // When iterating through the results, null values are skipped.
-            // If you want to access null values, use the getResultsArray() method.
-            // Results are ordered based on the list of Ids provided to the readByIds method.
-            while (iter.hasNext()) {
-                tradesList.add(iter.next());
+            // this ignores null results, or else we'd use addAll?
+            for (Trade trade : res) {
+                tradesList.add(trade);
             }
 
             if (missingTrades != null) {
-                for (int i = 0; i < missingTrades.length; i++) {
-                    tradesList.add(missingTrades[i]);
-                }
+                Collections.addAll(tradesList, missingTrades);
             }
         } catch (Exception e) {
             String a = e.getMessage();
@@ -95,17 +90,18 @@ public class CalculateNPVUtil {
         return rtnVal;
     }
 
+
     // creating a trade
     static public Trade generateTrade(int id) {
         Trade trade = new Trade();
         trade.setId(id);
         CashFlowData cf = new CashFlowData();
-        cf.setCashFlowYear0((double) (id * -100));
-        cf.setCashFlowYear1((double) (id * 20));
-        cf.setCashFlowYear2((double) (id * 40));
-        cf.setCashFlowYear3((double) (id * 60));
-        cf.setCashFlowYear4((double) (id * 80));
-        cf.setCashFlowYear5((double) (id * 100));
+        cf.setCashFlowYear0(id * -100 * (random.nextDouble() + 0.5));
+        cf.setCashFlowYear1(id * 20 * (random.nextDouble() + 0.5));
+        cf.setCashFlowYear2(id * 40 * (random.nextDouble() + 0.5));
+        cf.setCashFlowYear3(id * 60 * (random.nextDouble() + 0.5));
+        cf.setCashFlowYear4(id * 80 * (random.nextDouble() + 0.5));
+        cf.setCashFlowYear5(id * 100 * (random.nextDouble() + 0.5));
         trade.setCashFlowData(cf);
         return trade;
     }

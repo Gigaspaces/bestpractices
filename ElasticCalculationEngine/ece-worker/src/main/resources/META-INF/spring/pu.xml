@@ -23,16 +23,6 @@
 	<os-core:space id="space" url="jini://*/*/ece-datagrid" />
 	<os-core:giga-space id="gigaSpace" space="space"  tx-manager="transactionManager" />
 
-	<os-core:local-cache id="localCacheSpace" space="space">
-	    <os-core:properties>
-	        <props>
-	            <prop key="space-config.filters.Statistics.enabled">false</prop>
-	        </props>
-	    </os-core:properties>
-	</os-core:local-cache>
-
-	<os-core:giga-space id="gigaSpaceLocalCache" space="localCacheSpace" tx-manager="transactionManager"/>
-
-    <os-core:giga-space-context/>
+	<os-core:giga-space-context/>
     <os-remoting:annotation-support/>
 </beans>
