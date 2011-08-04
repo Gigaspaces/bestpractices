@@ -1,0 +1,79 @@
+This is the source for an ElasticCalculationEngine, meant to demonstrate some of GigaSpaces XAP's scaling features.
+
+To build:
+
+   mvn package
+
+The normal flow of operations will be to deploy the datagrid, and then use a client to utilize the grid in
+one of two modes: an executor-based mode, and a master/worker-based mode.
+
+There's also a scaling module, which allows a user to alter the characteristics of a deployed datagrid during
+runtime.
+
+To deploy the datagrid for the executor, there are three steps:
+
+   1. Build
+      mvn package
+   2. Start an instance of XAP
+      * Windows: gs-agent gsa.gsc 4
+      * UNIX   : ./scripts/agentStart.sh
+   3. Deploy the datagrid
+      * Windows: gs deploy ece-datagrid/target/ece-datagrid.jar
+      * UNIX   : gs.sh deploy ece-datagrid/target/ece-datagrid.jar
+
+Now you can start the ece-client application with the executor.
+
+To use the Executor-based mechanism:
+
+* UNIX   : scripts/client.sh -type executor
+* Windows: scripts/client -type executor
+
+To use the Master/Worker mechanism, there are two steps:
+
+   1. Deploy the worker module
+      * Windows: gs deploy ece-worker/target/ece-worker.jar
+      * UNIX   : gs.sh deploy ece-worker/target/ece-worker.jar
+   2. Run the client that initiates trades
+      * UNIX   : scripts/client.sh
+      * Windows: scripts/client
+
+The scaling module allows dynamic configuration of a datagrid. Normally, the scaling
+will be done in response to datagrid configuration and load, but this app demonstrates
+manual control of the datagrid.
+
+To use it, you must have an instance of XAP with the Elastic Service Manager running.
+
+If you are using the gs-agent line from the earlier example, shut down the gs-agent
+and restart it with:
+
+   * Windows: gs-agent gsa.global.esm 1 gsa.gsc 0 gsa.global.gsm 2 gsa.global.lus 2
+   * UNIX   : gs-agent.sh gsa.global.esm 1 gsa.gsc 0 gsa.global.gsm 2 gsa.global.lus 2
+
+This will create an instance of the Elastic Service Manager as well as instances of
+the GigaSpaces Manager container and the Lookup Service. (It will configure no more
+than two GSMs globally, and no more than two LUSes globally; if you have more than
+one machine running this line, some machines will not start the GSM or LUS if two
+containers exist.)
+
+To scale the data grid, you must deploy through the Elastic Service Manager.
+
+   * Windows: scripts/gridScale
+   * UNIX   : scripts/gridScale.sh
+
+Make sure the worker is deployed, through one of two mechanisms:
+
+   1. The scaling agent for the worker can deploy for you, if you've
+      deployed it once already.
+      * Windows: scripts/workerScale
+      * UNIX   : scripts/workerScale.sh
+   2. Manual deployment
+      * Windows: scripts/workerDeploy
+      * UNIX   : scripts/workerDeploy.sh
+
+If you deploy manually, run the workerScale script. 
+It presents you with a simple console prompt:
+
++,-,quit input>
+
+If you enter "+", it will enlarge the data grid. If you enter "-", it will shrink
+the data grid. "quit", surprisingly, shuts down the console application.
