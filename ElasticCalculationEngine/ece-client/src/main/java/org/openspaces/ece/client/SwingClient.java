@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Arrays;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +32,87 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 
 public class SwingClient {
+	private final class StaticDataGridDeployTask implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			log("Submitting static deploy request for Data Grid");
+			service.submit(new Runnable() {
+				@Override
+				public void run() {
+					GridServiceContainers gscs = admin
+							.getGridServiceContainers();
+					log("retrieved gscs");
+					int gscsToStart = Math.max(0, 4 - gscs.getSize());
+					int index = 0;
+					while (gscsToStart != 0) {
+						log("Starting GSC on agent " + index);
+						agents.getAgents()[index].startGridServiceAndWait(
+								new GridServiceContainerOptions(), 30,
+								TimeUnit.SECONDS);
+						index = (index + 1) % agents.getSize();
+						gscsToStart--;
+					}
+
+					dataGridPU = gsm.deploy(new ProcessingUnitDeployment(
+
+					dataGridPUFileRef));
+					btnDeployDataGridElastic.setEnabled(false);
+					btnDeployDataGridStatic.setEnabled(false);
+				}
+			});
+		}
+	}
+
+	private final class GigaSpacesAdminFinderTask implements Runnable {
+		@Override
+		public void run() {
+			log("Searching for GigaSpaces Admin objects");
+			admin = new AdminFactory().addGroup(group).addLocator(locator)
+					.createAdmin();
+			log("Admin: " + admin);
+			agents = admin.getGridServiceAgents();
+			agents.waitForAtLeastOne(10, TimeUnit.SECONDS);
+			log("Agents: " + Arrays.toString(agents.getAgents()));
+			gsm = admin.getGridServiceManagers().waitForAtLeastOne(10,
+					TimeUnit.SECONDS);
+			log("GSM: " + gsm);
+			ElasticServiceManagers esms = admin.getElasticServiceManagers();
+			log("ESMs: " + Arrays.toString(esms.getManagers()));
+			esm = esms.waitForAtLeastOne(10, TimeUnit.SECONDS);
+			log("ESM: " + esm);
+			ProcessingUnits pus = admin.getProcessingUnits();
+
+			log("looking for DataGrid");
+			dataGridPU = pus.waitFor("ece-datagrid", 5, TimeUnit.SECONDS);
+			log("DataGrid " + (dataGridPU == null ? "not " : "") + "found");
+
+			log("Looking for worker processing units");
+			workerPU = pus.waitFor("ece-worker", 5, TimeUnit.SECONDS);
+			log("Worker processing units " + (workerPU == null ? "not " : "")
+					+ "found");
+
+			log("GigaSpaces Admin search done");
+		}
+	}
+
+	public final class ArtifactFinderTask implements Runnable {
+		@Override
+		public void run() {
+			log("Searching for file artifacts");
+			String sep = System.getProperty("file.separator");
+			String home = System.getProperty("user.dir");
+			String dataGridFileName = home + sep + ".." + sep + "ece-datagrid"
+					+ sep + "target" + sep + "ece-datagrid.jar";
+			dataGridPUFileRef = new File(dataGridFileName);
+			log(dataGridPUFileRef + " exists: "
+					+ String.valueOf(dataGridPUFileRef.exists()));
+			String workerPUFileName = home + sep + ".." + sep + "ece-worker"
+					+ sep + "target" + sep + "ece-worker.jar";
+			workerPUFileRef = new File(workerPUFileName);
+			log(workerPUFileRef + " exists " + workerPUFileRef.exists());
+			log("Artifact search done");
+		}
+	}
+
 	@Parameter(names = { "-l", "--locator" })
 	String locator = "127.0.0.1";
 	@Parameter(names = { "-g", "--group" })
@@ -50,14 +132,16 @@ public class SwingClient {
 	GridServiceManager gsm;
 	ElasticServiceManager esm;
 	private JTextField textField;
-	private JTextField textField_1;
 	private JTextField textField_2;
-	private JTextField textField_3;
 	private JTextPane logPane = new JTextPane();
 	JButton btnDeployWorkerDirect;
 	JButton btnDeployDataGridElastic;
 	JButton btnDeployDataGridStatic;
+	JButton btnUndeployDataGrid;
+	JButton btnUndeployWorker;
 	ExecutorService service = Executors.newFixedThreadPool(2);
+	JTextField txtDataGridInstances;
+	JTextField txtWorkerInstances;
 	java.util.Timer timerDataGrid = new java.util.Timer();
 	java.util.Timer timerWorker = new java.util.Timer();
 
@@ -87,66 +171,35 @@ public class SwingClient {
 
 	public void init() {
 		initialize();
-		service.submit(new Runnable() {
+		service.submit(new ArtifactFinderTask());
+		service.submit(new GigaSpacesAdminFinderTask());
+		timerDataGrid.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				log("Searching for file artifacts");
-				String sep = System.getProperty("file.separator");
-				String home = System.getProperty("user.dir");
-				String dataGridFileName = home + sep + ".." + sep
-						+ "ece-datagrid" + sep + "target" + sep
-						+ "ece-datagrid.jar";
-				dataGridPUFileRef = new File(dataGridFileName);
-				log(dataGridPUFileRef + " exists: "
-						+ String.valueOf(dataGridPUFileRef.exists()));
-				String workerPUFileName = home + sep + ".." + sep
-						+ "ece-worker" + sep + "target" + sep
-						+ "ece-worker.jar";
-				workerPUFileRef = new File(workerPUFileName);
-				log(workerPUFileRef + " exists " + workerPUFileRef.exists());
-				log("Artifact search done");
+				int count = 0;
+				if (admin != null && dataGridPU != null) {
+					count = dataGridPU.getInstances().length;
+				}
+				txtDataGridInstances.setText(String.valueOf(count));
+
+				btnUndeployDataGrid.setEnabled(count > 0);
+				btnDeployDataGridStatic.setEnabled(count == 0);
+				btnDeployDataGridElastic.setEnabled(count == 0 && esm != null);
 			}
-		});
-		service.submit(new Runnable() {
+		}, 0, 2000);
+
+		timerWorker.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				log("Searching for GigaSpaces Admin objects");
-				admin = new AdminFactory().addGroup(group).addLocator(locator)
-						.createAdmin();
-				log("Admin: " + admin);
-				agents = admin.getGridServiceAgents();
-				agents.waitForAtLeastOne(10, TimeUnit.SECONDS);
-				log("Agents: " + Arrays.toString(agents.getAgents()));
-				gsm = admin.getGridServiceManagers().waitForAtLeastOne(10,
-						TimeUnit.SECONDS);
-				log("GSM: " + gsm);
-				ElasticServiceManagers esms = admin.getElasticServiceManagers();
-				log("ESMs: " + Arrays.toString(esms.getManagers()));
-				esm = esms.waitForAtLeastOne(10, TimeUnit.SECONDS);
-				log("ESM: " + esm);
-				ProcessingUnits pus = admin.getProcessingUnits();
-
-				log("looking for DataGrid");
-				dataGridPU = pus.waitFor("ece-datagrid", 5, TimeUnit.SECONDS);
-				if (dataGridPU == null) {
-					btnDeployDataGridStatic.setEnabled(true);
-					if (esm != null) {
-						btnDeployDataGridElastic.setEnabled(true);
-					}
+				int count = 0;
+				if (admin != null && workerPU != null) {
+					count = workerPU.getInstances().length;
 				}
-				log("DataGrid " + (dataGridPU == null ? "not " : "") + "found");
-
-				log("Looking for worker processing units");
-				workerPU = pus.waitFor("ece-worker", 5, TimeUnit.SECONDS);
-				if (workerPU == null) {
-					btnDeployWorkerDirect.setEnabled(true);
-				}
-				log("Worker processing units "
-						+ (workerPU == null ? "not " : "") + "found");
-
-				log("GigaSpaces Admin search done");
+				txtWorkerInstances.setText(String.valueOf(count));
+				btnDeployWorkerDirect.setEnabled(count == 0);
+				btnUndeployWorker.setEnabled(count > 0);
 			}
-		});
+		}, 0, 2000);
 	}
 
 	void log(final String loggedEvent) {
@@ -181,36 +234,8 @@ public class SwingClient {
 		panelDeploy.add(lblDeployDatagrid);
 
 		btnDeployDataGridStatic = new JButton("Static");
-		btnDeployDataGridStatic.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				log("Submitting deploy request to executor with "
-						+ service.isShutdown());
-				service.submit(new Runnable() {
-					@Override
-					public void run() {
-						GridServiceContainers gscs = admin
-								.getGridServiceContainers();
-						log("retrieved gscs");
-						int gscsToStart = 4 - gscs.getSize();
-						int index = 0;
-						while (gscsToStart != 0) {
-							log("Starting GSC on agent " + index);
-							agents.getAgents()[index].startGridServiceAndWait(
-									new GridServiceContainerOptions(), 30,
-									TimeUnit.SECONDS);
-							index = (index + 1) % agents.getSize();
-							gscsToStart--;
-						}
-
-						dataGridPU = gsm.deploy(new ProcessingUnitDeployment(
-
-						dataGridPUFileRef));
-						btnDeployDataGridElastic.setEnabled(false);
-						btnDeployDataGridStatic.setEnabled(false);
-					}
-				});
-			}
-		});
+		btnDeployDataGridStatic
+				.addActionListener(new StaticDataGridDeployTask());
 		btnDeployDataGridStatic.setEnabled(false);
 		btnDeployDataGridStatic
 				.setToolTipText("This deploys a static datagrid processing unit. Instance count is determined by the client.");
@@ -221,6 +246,22 @@ public class SwingClient {
 		btnDeployDataGridElastic
 				.setToolTipText("This deploys an elastic data grid; instance count is determined by memory usage.");
 		panelDeploy.add(btnDeployDataGridElastic);
+
+		btnUndeployDataGrid = new JButton("Undeploy");
+		btnUndeployDataGrid.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				log("Submitting undeploy request for Data Grid");
+				service.submit(new Runnable() {
+					@Override
+					public void run() {
+						dataGridPU.undeploy();
+						dataGridPU = null;
+					}
+				});
+			}
+		});
+		btnUndeployDataGrid.setEnabled(false);
+		panelDeploy.add(btnUndeployDataGrid);
 
 		JSeparator separator = new JSeparator();
 		separator.setOrientation(SwingConstants.VERTICAL);
@@ -233,7 +274,50 @@ public class SwingClient {
 		btnDeployWorkerDirect
 				.setToolTipText("This deploys a worker PU. Instance count is controlled by a client application.");
 		btnDeployWorkerDirect.setEnabled(false);
+		btnDeployWorkerDirect.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				log("Submitting static deploy request for Data Grid");
+				service.submit(new Runnable() {
+					@Override
+					public void run() {
+						GridServiceContainers gscs = admin
+								.getGridServiceContainers();
+						log("retrieved gscs");
+						int gscsToStart = Math.max(0, 1 - gscs.getSize());
+						int index = 0;
+						while (gscsToStart != 0) {
+							log("Starting GSC on agent " + index);
+							agents.getAgents()[index].startGridServiceAndWait(
+									new GridServiceContainerOptions(), 30,
+									TimeUnit.SECONDS);
+							index = (index + 1) % agents.getSize();
+							gscsToStart--;
+						}
+
+						workerPU = gsm.deploy(new ProcessingUnitDeployment(
+								workerPUFileRef));
+					}
+				});
+			}
+		});
 		panelDeploy.add(btnDeployWorkerDirect);
+
+		btnUndeployWorker = new JButton("Undeploy");
+		btnUndeployWorker.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				log("Submitting undeploy request for Data Grid");
+				service.submit(new Runnable() {
+					@Override
+					public void run() {
+						workerPU.undeploy();
+						workerPU = null;
+					}
+				});
+			}
+		});
+		panelDeploy.add(btnUndeployWorker);
 
 		JPanel panelScale = new JPanel();
 		frmElasticCalculationEngine.getContentPane().add(panelScale,
@@ -256,9 +340,10 @@ public class SwingClient {
 		panelScale.add(textField, "cell 1 1,growx");
 		textField.setColumns(1);
 
-		textField_1 = new JTextField();
-		panelScale.add(textField_1, "cell 2 1,growx");
-		textField_1.setColumns(10);
+		txtDataGridInstances = new JTextField();
+		txtDataGridInstances.setHorizontalAlignment(SwingConstants.RIGHT);
+		panelScale.add(txtDataGridInstances, "cell 2 1,growx");
+		txtDataGridInstances.setColumns(10);
 
 		JButton btnNewButton_2 = new JButton("Add Instance");
 		panelScale.add(btnNewButton_2, "cell 3 1");
@@ -273,9 +358,10 @@ public class SwingClient {
 		panelScale.add(textField_2, "cell 1 2,growx");
 		textField_2.setColumns(10);
 
-		textField_3 = new JTextField();
-		panelScale.add(textField_3, "cell 2 2,growx");
-		textField_3.setColumns(10);
+		txtWorkerInstances = new JTextField();
+		txtWorkerInstances.setHorizontalAlignment(SwingConstants.RIGHT);
+		panelScale.add(txtWorkerInstances, "cell 2 2,growx");
+		txtWorkerInstances.setColumns(10);
 
 		JButton btnAddInstance = new JButton("Add Instance");
 		panelScale.add(btnAddInstance, "cell 3 2");
