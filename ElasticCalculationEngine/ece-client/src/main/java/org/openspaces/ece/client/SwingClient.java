@@ -38,6 +38,8 @@ public class SwingClient {
 			service.submit(new Runnable() {
 				@Override
 				public void run() {
+					// need to add GSCs if we have more primary instances than
+					// GSCs
 					GridServiceContainers gscs = admin
 							.getGridServiceContainers();
 					log("retrieved gscs");
@@ -53,8 +55,7 @@ public class SwingClient {
 					}
 
 					dataGridPU = gsm.deploy(new ProcessingUnitDeployment(
-
-					dataGridPUFileRef));
+							dataGridPUFileRef));
 					btnDeployDataGridElastic.setEnabled(false);
 					btnDeployDataGridStatic.setEnabled(false);
 				}
@@ -144,6 +145,10 @@ public class SwingClient {
 	JTextField txtWorkerInstances;
 	java.util.Timer timerDataGrid = new java.util.Timer();
 	java.util.Timer timerWorker = new java.util.Timer();
+	JButton btnAddWorkerInstance;
+	JButton btnRemoveWorkerInstance;
+	JButton btnAddDataGridInstance;
+	JButton btnRemoveDataGridInstance;
 
 	/**
 	 * Launch the application.
@@ -185,6 +190,10 @@ public class SwingClient {
 				btnUndeployDataGrid.setEnabled(count > 0);
 				btnDeployDataGridStatic.setEnabled(count == 0);
 				btnDeployDataGridElastic.setEnabled(count == 0 && esm != null);
+				btnAddDataGridInstance.setEnabled(dataGridPU != null
+						&& dataGridPU.canIncrementInstance() && count > 0);
+				btnAddDataGridInstance.setEnabled(dataGridPU != null
+						&& dataGridPU.canDecrementInstance() && count > 1);
 			}
 		}, 0, 2000);
 
@@ -198,6 +207,10 @@ public class SwingClient {
 				txtWorkerInstances.setText(String.valueOf(count));
 				btnDeployWorkerDirect.setEnabled(count == 0);
 				btnUndeployWorker.setEnabled(count > 0);
+				btnAddWorkerInstance.setEnabled(workerPU != null
+						&& workerPU.canIncrementInstance() && count > 0);
+				btnAddWorkerInstance.setEnabled(workerPU != null
+						&& workerPU.canDecrementInstance() && count > 1);
 			}
 		}, 0, 2000);
 	}
@@ -278,7 +291,7 @@ public class SwingClient {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				log("Submitting static deploy request for Data Grid");
+				log("Submitting static deploy request for Worker");
 				service.submit(new Runnable() {
 					@Override
 					public void run() {
@@ -307,7 +320,7 @@ public class SwingClient {
 		btnUndeployWorker = new JButton("Undeploy");
 		btnUndeployWorker.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				log("Submitting undeploy request for Data Grid");
+				log("Submitting undeploy request for Worker");
 				service.submit(new Runnable() {
 					@Override
 					public void run() {
@@ -345,11 +358,23 @@ public class SwingClient {
 		panelScale.add(txtDataGridInstances, "cell 2 1,growx");
 		txtDataGridInstances.setColumns(10);
 
-		JButton btnNewButton_2 = new JButton("Add Instance");
-		panelScale.add(btnNewButton_2, "cell 3 1");
+		btnAddDataGridInstance = new JButton("Add Instance");
+		btnAddDataGridInstance.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dataGridPU.incrementInstance();
+			}
+		});
+		panelScale.add(btnAddDataGridInstance, "cell 3 1");
 
-		JButton btnNewButton_3 = new JButton("Remove Instance");
-		panelScale.add(btnNewButton_3, "cell 5 1");
+		btnRemoveDataGridInstance = new JButton("Remove Instance");
+		btnRemoveDataGridInstance.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dataGridPU.decrementInstance();
+			}
+		});
+		panelScale.add(btnRemoveDataGridInstance, "cell 5 1");
 
 		JLabel lblWorker = new JLabel("Worker");
 		panelScale.add(lblWorker, "cell 0 2,alignx trailing");
@@ -363,11 +388,23 @@ public class SwingClient {
 		panelScale.add(txtWorkerInstances, "cell 2 2,growx");
 		txtWorkerInstances.setColumns(10);
 
-		JButton btnAddInstance = new JButton("Add Instance");
-		panelScale.add(btnAddInstance, "cell 3 2");
+		btnAddWorkerInstance = new JButton("Add Instance");
+		btnAddWorkerInstance.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				workerPU.incrementInstance();
+			}
+		});
+		panelScale.add(btnAddWorkerInstance, "cell 3 2");
 
-		JButton btnRemoveInstance = new JButton("Remove Instance");
-		panelScale.add(btnRemoveInstance, "cell 5 2");
+		btnRemoveWorkerInstance = new JButton("Remove Instance");
+		btnRemoveWorkerInstance.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				workerPU.decrementInstance();
+			}
+		});
+		panelScale.add(btnRemoveWorkerInstance, "cell 5 2");
 
 		JScrollPane scrollPane = new JScrollPane(logPane);
 		logPane.setFont(new Font("Consolas", Font.PLAIN, 10));
