@@ -14,8 +14,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.swing.*;
 
-import net.miginfocom.swing.MigLayout;
-
 import org.openspaces.admin.Admin;
 import org.openspaces.admin.AdminFactory;
 import org.openspaces.admin.esm.ElasticServiceManager;
@@ -333,8 +331,6 @@ public class SwingClient {
 		JPanel panelScale = new JPanel();
 		frmElasticCalculationEngine.getContentPane().add(panelScale,
 				BorderLayout.CENTER);
-		panelScale.setLayout(new MigLayout("", "[][grow,left][grow][][][]",
-				"[][][][grow,bottom]"));
 
 		JLabel lblStatus = new JLabel("Status");
 		panelScale.add(lblStatus, "cell 1 0");
