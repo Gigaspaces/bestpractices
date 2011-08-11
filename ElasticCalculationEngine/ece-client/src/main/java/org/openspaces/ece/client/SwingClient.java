@@ -118,8 +118,6 @@ public class SwingClient {
 	String locator = "127.0.0.1";
 	@Parameter(names = { "-g", "--group" })
 	String group = "Gigaspaces-XAPPremium-8.0.3-rc";
-	@Parameter(names = { "-n", "--name" })
-	String processingUnitName = "ece-worker";
 	@Parameter(names = { "-m" })
 	Integer initialWorkers = 2;
 
