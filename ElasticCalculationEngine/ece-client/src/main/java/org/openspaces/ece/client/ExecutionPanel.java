@@ -8,6 +8,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
 
 public class ExecutionPanel extends JPanel {
+	ClientLogger logger;
 
 	/**
 	 * 
@@ -15,6 +16,7 @@ public class ExecutionPanel extends JPanel {
 	private static final long serialVersionUID = -1006808632768911289L;
 	private JTextField txtTradeCount;
 	private JTextField txtThreadCount;
+	private JTextField txtIterations;
 
 	/**
 	 * Create the panel.
@@ -27,7 +29,7 @@ public class ExecutionPanel extends JPanel {
 				FormFactory.LABEL_COMPONENT_GAP_COLSPEC,
 				ColumnSpec.decode("86px"),
 				FormFactory.LABEL_COMPONENT_GAP_COLSPEC,
-				ColumnSpec.decode("92px"), }, new RowSpec[] {
+				ColumnSpec.decode("92px:grow"), }, new RowSpec[] {
 				FormFactory.LINE_GAP_ROWSPEC, RowSpec.decode("23px"),
 				FormFactory.LINE_GAP_ROWSPEC, RowSpec.decode("20px"),
 				FormFactory.RELATED_GAP_ROWSPEC, FormFactory.DEFAULT_ROWSPEC, }));
@@ -48,8 +50,14 @@ public class ExecutionPanel extends JPanel {
 		add(txtTradeCount, "4, 4, fill, default");
 		txtTradeCount.setColumns(10);
 
-		JButton btnRun = new JButton("Run");
-		add(btnRun, "8, 4");
+		JLabel lblIterations = new JLabel("Iterations");
+		lblIterations.setHorizontalAlignment(SwingConstants.RIGHT);
+		add(lblIterations, "6, 4, right, default");
+
+		txtIterations = new JTextField();
+		txtIterations.setText("Iterations");
+		add(txtIterations, "8, 4, fill, default");
+		txtIterations.setColumns(10);
 
 		JLabel lblThreadCount = new JLabel("Thread Count");
 		add(lblThreadCount, "2, 6, right, default");
@@ -58,6 +66,11 @@ public class ExecutionPanel extends JPanel {
 		txtThreadCount.setText("Thread Count");
 		add(txtThreadCount, "4, 6, fill, default");
 		txtThreadCount.setColumns(10);
+
+		JButton btnRun = new JButton("Run");
+		// btnRun.addActionListener(new
+		// ClientExecutionAction(chckbxTaskExecution));
+		add(btnRun, "8, 6");
 
 	}
 
