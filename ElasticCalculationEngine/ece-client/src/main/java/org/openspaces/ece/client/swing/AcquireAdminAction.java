@@ -1,4 +1,4 @@
-package org.openspaces.ece.client;
+package org.openspaces.ece.client.swing;
 
 import java.io.*;
 import java.util.concurrent.TimeUnit;
@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 import org.openspaces.admin.Admin;
 import org.openspaces.admin.AdminFactory;
 import org.openspaces.admin.gsa.GridServiceAgent;
+import org.openspaces.ece.client.ClientLogger;
 
 public class AcquireAdminAction implements Runnable {
 	ContainsAdmin adminContainer;

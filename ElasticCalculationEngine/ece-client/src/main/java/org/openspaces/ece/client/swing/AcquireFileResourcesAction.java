@@ -1,4 +1,4 @@
-package org.openspaces.ece.client;
+package org.openspaces.ece.client.swing;
 
 import java.io.File;
 

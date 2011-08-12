@@ -1,4 +1,4 @@
-package org.openspaces.ece.client.swing;
+package org.openspaces.ece.client.temp;
 
 import org.openspaces.core.GigaSpace;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -14,7 +14,7 @@ public class AbstractClient implements Client {
 	int iterations;
 
 	/* (non-Javadoc)
-	 * @see org.openspaces.ece.client.swing.Client#getTrades()
+	 * @see org.openspaces.ece.client.temp.Client#getTrades()
 	 */
 	@Override
 	public int getTrades() {
@@ -22,7 +22,7 @@ public class AbstractClient implements Client {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.openspaces.ece.client.swing.Client#setTrades(int)
+	 * @see org.openspaces.ece.client.temp.Client#setTrades(int)
 	 */
 	@Override
 	public void setTrades(int trades) {
@@ -30,7 +30,7 @@ public class AbstractClient implements Client {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.openspaces.ece.client.swing.Client#getIterations()
+	 * @see org.openspaces.ece.client.temp.Client#getIterations()
 	 */
 	@Override
 	public int getIterations() {
@@ -38,7 +38,7 @@ public class AbstractClient implements Client {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.openspaces.ece.client.swing.Client#setIterations(int)
+	 * @see org.openspaces.ece.client.temp.Client#setIterations(int)
 	 */
 	@Override
 	public void setIterations(int iterations) {

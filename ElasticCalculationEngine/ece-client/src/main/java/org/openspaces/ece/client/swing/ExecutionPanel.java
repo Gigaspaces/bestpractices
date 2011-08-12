@@ -1,4 +1,4 @@
-package org.openspaces.ece.client;
+package org.openspaces.ece.client.swing;
 
 import javax.swing.*;
 
@@ -6,6 +6,7 @@ import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
+import org.openspaces.ece.client.ClientLogger;
 
 public class ExecutionPanel extends JPanel {
 	ClientLogger logger;

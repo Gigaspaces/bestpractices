@@ -1,4 +1,6 @@
-package org.openspaces.ece.client;
+package org.openspaces.ece.client.swing;
+
+import org.openspaces.ece.client.ClientLogger;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;

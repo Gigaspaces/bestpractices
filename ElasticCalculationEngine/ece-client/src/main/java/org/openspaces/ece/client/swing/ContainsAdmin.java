@@ -1,4 +1,4 @@
-package org.openspaces.ece.client;
+package org.openspaces.ece.client.swing;
 
 import org.openspaces.admin.Admin;
 import org.openspaces.admin.gsa.GridServiceAgent;

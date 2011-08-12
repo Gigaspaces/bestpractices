@@ -19,6 +19,8 @@ import org.openspaces.admin.gsa.GridServiceAgent;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import org.openspaces.ece.client.factories.ClientLoggerFactory;
+import org.openspaces.ece.client.swing.*;
 
 public class SwingClient2 implements ContainsAdmin, ContainsResources {
 	ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime()
@@ -151,7 +153,7 @@ public class SwingClient2 implements ContainsAdmin, ContainsResources {
 
 		executionPanel = new ExecutionPanel();
 		panelExecution.add(executionPanel, BorderLayout.CENTER);
-		logPanel = new LogPanel();
+		logPanel = new ClientLoggerFactory().swing().build();
 
 		GridBagConstraints gbc_logPanel = new GridBagConstraints();
 		gbc_logPanel.weighty = 3.0;

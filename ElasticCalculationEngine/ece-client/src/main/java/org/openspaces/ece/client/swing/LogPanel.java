@@ -1,4 +1,6 @@
-package org.openspaces.ece.client;
+package org.openspaces.ece.client.swing;
+
+import org.openspaces.ece.client.ClientLogger;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -22,7 +24,8 @@ public class LogPanel extends JPanel implements ClientLogger {
 
 	/**
 	 * Create the panel.
-	 */
+     * @param controlLocation the location of the control panel
+     */
 	public LogPanel(String controlLocation) {
 		setLayout(new BorderLayout(0, 0));
 

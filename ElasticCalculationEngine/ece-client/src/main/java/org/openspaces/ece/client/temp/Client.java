@@ -1,4 +1,4 @@
-package org.openspaces.ece.client.swing;
+package org.openspaces.ece.client.temp;
 
 public interface Client {
 
