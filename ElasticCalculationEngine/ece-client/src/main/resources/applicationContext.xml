@@ -26,6 +26,6 @@
 
     <os-core:giga-space-context/>
     <os-remoting:annotation-support/>
-    <bean id="masterworker" class="org.openspaces.ece.client.impl.ECEMasterWorkerClient" />
-    <bean id="executor" class="org.openspaces.ece.client.impl.ECEExecutorClient" />
+    <bean id="masterworker" class="org.openspaces.ece.client.clients.ECEMasterWorkerClient" />
+    <bean id="executor" class="org.openspaces.ece.client.clients.ECEExecutorClient" />
 </beans>

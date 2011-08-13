@@ -19,7 +19,7 @@ import org.openspaces.admin.gsa.GridServiceAgent;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
-import org.openspaces.ece.client.factories.ClientLoggerFactory;
+import org.openspaces.ece.client.builders.ClientLoggerBuilder;
 import org.openspaces.ece.client.swing.*;
 
 public class SwingClient2 implements ContainsAdmin, ContainsResources {
@@ -30,11 +30,11 @@ public class SwingClient2 implements ContainsAdmin, ContainsResources {
 	@Parameter(names = { "-l", "--locator" })
 	String locator = "127.0.0.1";
 	@Parameter(names = { "-g", "--group" })
-	String group = "Gigaspaces-XAPPremium-8.0.3-rc";
+	String group = "Gigaspaces-XAPPremium-8.0.3-ga";
 	@Parameter(names = { "-m" })
 	Integer initialWorkers = 2;
 	@Parameter(names = { "-h", "--gshome" })
-	String gsHome = "C:\\tools\\Gigaspaces-XAP-Premium-8.0.3-rc";
+	String gsHome = "C:\\tools\\Gigaspaces-XAP-Premium-8.0.3-ga";
 	Map<String, File> resources = new ConcurrentHashMap<String, File>();
 	Admin admin = null;
 	GridServiceAgent GSA = null;
@@ -153,7 +153,7 @@ public class SwingClient2 implements ContainsAdmin, ContainsResources {
 
 		executionPanel = new ExecutionPanel();
 		panelExecution.add(executionPanel, BorderLayout.CENTER);
-		logPanel = new ClientLoggerFactory().swing().build();
+		logPanel = new ClientLoggerBuilder().swing().build();
 
 		GridBagConstraints gbc_logPanel = new GridBagConstraints();
 		gbc_logPanel.weighty = 3.0;

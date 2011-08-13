@@ -1,4 +1,4 @@
-package org.openspaces.ece.client.impl;
+package org.openspaces.ece.client.clients;
 
 import com.gigaspaces.async.AsyncFuture;
 import org.openspaces.admin.Admin;
@@ -16,17 +16,9 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class ECEExecutorClient extends AbstractECEClient {
-    int workersCount = 8;
-    ProcessingUnit workerPU = null;
     double rates[] = {2, 3, 4, 5, 6, 7, 8};
 
     public ECEExecutorClient() {
-        Admin admin = new AdminFactory().createAdmin();
-        workerPU = admin.getProcessingUnits().waitFor("worker", 5, TimeUnit.SECONDS);
-        if (workerPU != null) {
-            workerPU.addLifecycleListener(this);
-            workersCount = workerPU.getNumberOfInstances();
-        }
     }
 
     public ECEExecutorClient(int maxTrades) {
@@ -47,7 +39,7 @@ public class ECEExecutorClient extends AbstractECEClient {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        workersCount = workerPU.getNumberOfInstances();
+        workers = worker.getNumberOfInstances();
     }
 
     @Override
@@ -57,7 +49,7 @@ public class ECEExecutorClient extends AbstractECEClient {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        workersCount = workerPU.getNumberOfInstances();
+        workers= worker.getNumberOfInstances();
     }
 
     @Override
@@ -67,19 +59,19 @@ public class ECEExecutorClient extends AbstractECEClient {
             ids[i] = i;
         }
         // Mapping IDs to partition
-        HashMap<Integer, HashSet<Integer>> partitionIDSDistro = CalculateNPVUtil.splitIDs(ids, workersCount);
-        AnalysisTask analysisTasks[] = new AnalysisTask[workersCount];
+        HashMap<Integer, HashSet<Integer>> partitionIDSDistro = CalculateNPVUtil.splitIDs(ids, workers);
+        AnalysisTask analysisTasks[] = new AnalysisTask[workers];
 
         for (int c = 0; c < getMaxIterations(); c++) {
             Map<String, Double> positions;
-            logger.info("Calculating Net present value for " + getMaxTrades() + " Trades ...");
+            logger.log("Calculating Net present value for %d Trades ...", getMaxTrades());
             ExecutorBuilder<HashMap<String, Double>, HashMap<String, Double>> executorBuilder =
                     space.executorBuilder(new NPVResultsReducer());
 
             // Creating the Tasks. Each partition getting a Task with the exact Trade IDs to calculate
             for (double rate : rates) {
                 long startTime = System.currentTimeMillis();
-                for (int i = 0; i < workersCount; i++) {
+                for (int i = 0; i < workers; i++) {
                     Integer partIDs[] = new Integer[partitionIDSDistro.get(i).size()];
                     partitionIDSDistro.get(i).toArray(partIDs);
                     analysisTasks[i] = new AnalysisTask(partIDs, i, rate);
@@ -92,10 +84,10 @@ public class ECEExecutorClient extends AbstractECEClient {
                     try {
                         positions = future.get();
                         long endTime = System.currentTimeMillis();
-                        logger.info("\nTime to calculate Net present value for "
+                        logger.log("\nTime to calculate Net present value for "
                                 + getMaxTrades() + " Trades using " + rate + " % rate:" + (endTime - startTime) + " ms");
                         for (String key : positions.keySet()) {
-                            logger.info("Book = " + key + ", NPV = " + formatter.format(positions.get(key)));
+                            logger.log("Book = %s, NPV = %3.2f", key, positions.get(key));
                         }
                         Thread.sleep(1000);
                     } catch (Exception ignored) {

@@ -1,57 +1,23 @@
-package org.openspaces.ece.client.impl;
+package org.openspaces.ece.client.clients;
 
-import org.openspaces.admin.Admin;
-import org.openspaces.admin.AdminFactory;
-import org.openspaces.admin.pu.ProcessingUnit;
-import org.openspaces.admin.pu.ProcessingUnitInstance;
 import org.openspaces.calcengine.common.CalculateNPVUtil;
 import org.openspaces.calcengine.masterworker.Request;
 import org.openspaces.calcengine.masterworker.Result;
 import org.openspaces.core.GigaSpace;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import java.text.DecimalFormat;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 public class ECEMasterWorkerClient extends AbstractECEClient {
-    int workersCount = 8;
-    ProcessingUnit workerPU = null;
     double rates[] = {2, 3, 4, 5, 6, 7, 8};
-    Logger logger = Logger.getLogger(this.getClass().getName());
-    DecimalFormat formatter = new DecimalFormat("0.0");
-
-    @Autowired
-    PlatformTransactionManager ptm = null;
-    @Autowired
-    GigaSpace space;
-
     public ECEMasterWorkerClient() {
-        Admin admin = new AdminFactory().addGroup("Gigaspaces-XAPPremium-8.0.3-rc").addLocator("127.0.0.1").createAdmin();
-        System.out.println(Arrays.toString(admin.getVirtualMachines().getVirtualMachines()));
-        workersCount = 0;
-        System.out.println(admin.getProcessingUnits().getNames());
-        workerPU = admin.getProcessingUnits().waitFor("ece-worker", 5, TimeUnit.SECONDS);
-        if (workerPU != null) {
-            System.out.println(workerPU);
-            workerPU.addLifecycleListener(this);
-            workersCount = workerPU.getNumberOfInstances();
-        } else {
-            System.out.println("No workers found; is this intentional? Master/Worker exiting.");
-            admin.close();
-        }
-        valid = true;
     }
 
     public ECEMasterWorkerClient(int maxTrades) {
-        this();
         setMaxTrades(maxTrades);
     }
 
@@ -59,26 +25,6 @@ public class ECEMasterWorkerClient extends AbstractECEClient {
     public ECEMasterWorkerClient(int maxTrades, int maxIterations) {
         this(maxTrades);
         setMaxIterations(maxIterations);
-    }
-
-    @Override
-    public void processingUnitInstanceAdded(ProcessingUnitInstance processingUnitInstance) {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        workersCount = workerPU.getNumberOfInstances();
-    }
-
-    @Override
-    public void processingUnitInstanceRemoved(ProcessingUnitInstance processingUnitInstance) {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        workersCount = workerPU.getNumberOfInstances();
     }
 
     @Override
@@ -91,14 +37,14 @@ public class ECEMasterWorkerClient extends AbstractECEClient {
         for (double rate : rates) {
             for (int i = 0; i < getMaxIterations(); i++) {
                 // Mapping IDs to worker
-                HashMap<Integer, HashSet<Integer>> partitionIDSDistro = CalculateNPVUtil.splitIDs(ids, workersCount);
+                HashMap<Integer, HashSet<Integer>> partitionIDSDistro = CalculateNPVUtil.splitIDs(ids, workers);
                 long startTime = System.currentTimeMillis();
-                logger.info("--> Executing Job " + i + " with " + workersCount + " workers");
+                logger.log("--> Executing Job %d with %d workers", i, workers);
                 if (execute(i, partitionIDSDistro, rate)) {
                     reduce(i, partitionIDSDistro.size());
                 }
                 long endTime = System.currentTimeMillis();
-                logger.info("--> Time to Execute Job " + i + " - " + (endTime - startTime) + "ms\n");
+                logger.log("--> Time to Execute Job %d - %d ms" , i, endTime-startTime);
                 try {
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
@@ -124,14 +70,14 @@ public class ECEMasterWorkerClient extends AbstractECEClient {
             if (results.length > 0) {
                 count = count + results.length;
                 // aggregate the results into books
-                for (int i = 0; i < results.length; i++) {
-                    HashMap<String, Double> incPositions = results[i].getResultData();
+                for (Result result : results) {
+                    HashMap<String, Double> incPositions = result.getResultData();
                     CalculateNPVUtil.subreducer(aggregatedNPVCalc, incPositions);
                 }
             }
             // Do we have all the results?
             if (count == totalResultsExpected) {
-                logger.info("--> Done executing Job " + jobId);
+                logger.log("--> Done executing Job %d", jobId);
                 break;
             }
             try {
@@ -148,7 +94,7 @@ public class ECEMasterWorkerClient extends AbstractECEClient {
         try {
             ptm.commit(status);
             for (String key : aggregatedNPVCalc.keySet()) {
-                logger.info("Book = " + key + ", NPV = " + formatter.format(aggregatedNPVCalc.get(key)));
+                logger.log("Book = %s, NPV = %3.2f", key, aggregatedNPVCalc.get(key));
             }
         } catch (Exception e) {
             if (!status.isCompleted())
@@ -169,7 +115,7 @@ public class ECEMasterWorkerClient extends AbstractECEClient {
                 requests[i] = new Request();
                 requests[i].setJobID(jobId);
                 requests[i].setTaskID(jobId + "_" + i);
-                requests[i].setRouting(i % workersCount);
+                requests[i].setRouting(i % workers);
                 requests[i].setRate(rate);
                 Integer[] ids_ = new Integer[ids.size()];
                 ids.toArray(ids_);
@@ -183,7 +129,7 @@ public class ECEMasterWorkerClient extends AbstractECEClient {
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-            if (!status.isCompleted())
+            if (status!=null && !status.isCompleted())
                 ptm.rollback(status);
         }
         return false;

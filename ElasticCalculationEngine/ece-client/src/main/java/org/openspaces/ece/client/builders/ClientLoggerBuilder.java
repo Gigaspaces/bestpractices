@@ -1,16 +1,16 @@
-package org.openspaces.ece.client.factories;
+package org.openspaces.ece.client.builders;
 
 import org.openspaces.ece.client.ClientLogger;
 
-public class ClientLoggerFactory {
+public class ClientLoggerBuilder {
     ClientLoggerType type;
 
-    public ClientLoggerFactory swing() {
+    public ClientLoggerBuilder swing() {
         type = ClientLoggerType.SWING;
         return this;
     }
 
-    ClientLoggerFactory console() {
+    public ClientLoggerBuilder console() {
         type = ClientLoggerType.CONSOLE;
         return this;
     }

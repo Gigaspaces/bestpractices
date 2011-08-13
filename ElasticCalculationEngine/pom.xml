@@ -19,7 +19,7 @@
     </modules>
 
     <properties>
-        <gsVersion>8.0.3-rc</gsVersion>
+        <gsVersion>8.0.3</gsVersion>
         <springVersion>3.0.5.RELEASE</springVersion>
         <testngVersion>6.1.1</testngVersion>
     </properties>

@@ -2,6 +2,8 @@ package org.openspaces.ece.client.swing;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.JButton;
@@ -56,8 +58,12 @@ public class DeployActionListener implements ActionListener {
 		GridServiceManager gsm = panel.getAdminContainer().getAdmin()
 				.getGridServiceManagers()
 				.waitForAtLeastOne(1, TimeUnit.SECONDS);
-		gsm.deploy(new ProcessingUnitDeployment(panel.getResourceContainer()
-				.getResources().get(panel.getProcessingUnitName() + ".jar")));
+        ContainsResources resourceContainer=panel.getResourceContainer();
+        Map<String, File> resources=resourceContainer.getResources();
+        System.out.println(panel.getProcessingUnitName()+".jar");
+        System.out.println(resources.get(panel.getProcessingUnitName()+".jar"));
+        File processingUnitFile=resources.get(panel.getProcessingUnitName()+".jar");
+		gsm.deploy(new ProcessingUnitDeployment(processingUnitFile));
 	}
 
 	private void ensureInstances(int i) {
@@ -66,13 +72,13 @@ public class DeployActionListener implements ActionListener {
 		GridServiceAgents agents = panel.getAdminContainer().getAdmin()
 				.getGridServiceAgents();
 		agents.waitForAtLeastOne(1, TimeUnit.SECONDS);
-		panel.getLogger().log("retrieved " + gscs.getSize() + "gscs");
+		panel.getLogger().log("retrieved %d gscs",gscs.getSize());
 		int gscsToStart = Math.max(0, i - gscs.getSize());
 		int index = 0;
 
 		while (gscsToStart != 0) {
-			panel.getLogger().log("We need to start " + gscsToStart);
-			panel.getLogger().log("Starting GSC on agent " + index);
+			panel.getLogger().log("We need to start %d", gscsToStart);
+			panel.getLogger().log("Starting GSC on agent %d", index);
 			agents.getAgents()[index].startGridServiceAndWait(
 					new GridServiceContainerOptions(), 30, TimeUnit.SECONDS);
 			index = (index + 1) % agents.getSize();

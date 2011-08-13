@@ -1,4 +1,4 @@
-package org.openspaces.ece.client.factories;
+package org.openspaces.ece.client.builders;
 
 import org.openspaces.ece.client.ClientLogger;
 import org.openspaces.ece.client.console.ConsoleLogger;

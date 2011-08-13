@@ -1,5 +1,8 @@
 package org.openspaces.ece.client;
 
+import org.openspaces.ece.client.clients.NoWorkersAvailableException;
+import org.openspaces.ece.client.swing.ContainsAdmin;
+
 public interface ECEClient {
     void issueTrades();
 
@@ -13,4 +16,18 @@ public interface ECEClient {
 
     boolean isValid();
 
+    void setClientLogger(ClientLogger logger);
+
+    void setSpaceUrl(String spaceUrl);
+
+    void init() throws NoWorkersAvailableException;
+    void setContainsAdmin(ContainsAdmin admin);
+
+    String getGroup();
+
+    void setGroup(String group);
+
+    String getLocator();
+
+    void setLocator(String locator);
 }
