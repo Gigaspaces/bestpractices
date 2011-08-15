@@ -54,6 +54,8 @@ public class ConsoleClient implements ContainsAdmin {
         if (eceClient.isValid()) {
             eceClient.issueTrades();
         }
+        // we exit explicitly because I don't feel like tracing the resource lock
+        System.exit(0);
     }
 
     ConsoleClient() {

@@ -75,25 +75,27 @@ public class ECEExecutorClient extends AbstractECEClient {
                     Integer partIDs[] = new Integer[partitionIDSDistro.get(i).size()];
                     partitionIDSDistro.get(i).toArray(partIDs);
                     analysisTasks[i] = new AnalysisTask(partIDs, i, rate);
+                    System.out.println("Submitting "+analysisTasks[i]);
                     executorBuilder.add(analysisTasks[i]);
                 }
 
                 AsyncFuture<HashMap<String, Double>> future = executorBuilder.execute();
-
+                System.out.println(future);
                 if (future != null) {
                     try {
                         positions = future.get();
                         long endTime = System.currentTimeMillis();
-                        logger.log("\nTime to calculate Net present value for "
-                                + getMaxTrades() + " Trades using " + rate + " % rate:" + (endTime - startTime) + " ms");
+                        logger.log("Time to calculate Net present value for %d Trades using %3.2f%% rate: %dms", getMaxTrades(), rate, (endTime - startTime));
                         for (String key : positions.keySet()) {
                             logger.log("Book = %s, NPV = %3.2f", key, positions.get(key));
                         }
                         Thread.sleep(1000);
                     } catch (Exception ignored) {
+                       ignored.printStackTrace();
                     }
                 }
             }
+
         }
     }
 }
