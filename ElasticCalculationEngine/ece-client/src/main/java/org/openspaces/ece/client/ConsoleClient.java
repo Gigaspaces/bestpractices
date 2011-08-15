@@ -8,7 +8,6 @@ import org.openspaces.admin.gsa.GridServiceAgent;
 import org.openspaces.ece.client.builders.ClientBuilder;
 import org.openspaces.ece.client.builders.ClientLoggerBuilder;
 import org.openspaces.ece.client.clients.NoWorkersAvailableException;
-import org.openspaces.ece.client.swing.ContainsAdmin;
 
 import java.util.concurrent.TimeUnit;
 

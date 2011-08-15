@@ -1,5 +1,7 @@
 package org.openspaces.ece.client.swing;
 
+import org.openspaces.ece.client.ContainsResources;
+
 import java.io.File;
 
 public class AcquireFileResourcesAction implements Runnable {

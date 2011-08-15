@@ -1,9 +1,8 @@
 package org.openspaces.ece.client.builders;
 
-import org.openspaces.ece.client.ClientLogger;
-import org.openspaces.ece.client.ECEClient;
-import org.openspaces.ece.client.swing.ContainsAdmin;
-import org.openspaces.ece.client.swing.ContainsResources;
+import org.openspaces.ece.client.*;
+import org.openspaces.ece.client.ContainsAdmin;
+import org.openspaces.ece.client.ContainsResources;
 
 public class ClientBuilder {
     private String url;

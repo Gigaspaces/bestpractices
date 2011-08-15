@@ -7,12 +7,11 @@ import org.openspaces.admin.pu.events.ProcessingUnitInstanceLifecycleEventListen
 import org.openspaces.core.GigaSpace;
 import org.openspaces.core.GigaSpaceConfigurer;
 import org.openspaces.core.space.UrlSpaceConfigurer;
-import org.openspaces.core.transaction.manager.DistributedJiniTransactionManager;
 import org.openspaces.core.transaction.manager.DistributedJiniTxManagerConfigurer;
 import org.openspaces.ece.client.ClientLogger;
+import org.openspaces.ece.client.ContainsAdmin;
 import org.openspaces.ece.client.ECEClient;
 import org.openspaces.ece.client.builders.ClientLoggerBuilder;
-import org.openspaces.ece.client.swing.ContainsAdmin;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import java.util.concurrent.TimeUnit;

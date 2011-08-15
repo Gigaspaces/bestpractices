@@ -75,12 +75,10 @@ public class ECEExecutorClient extends AbstractECEClient {
                     Integer partIDs[] = new Integer[partitionIDSDistro.get(i).size()];
                     partitionIDSDistro.get(i).toArray(partIDs);
                     analysisTasks[i] = new AnalysisTask(partIDs, i, rate);
-                    System.out.println("Submitting "+analysisTasks[i]);
                     executorBuilder.add(analysisTasks[i]);
                 }
 
                 AsyncFuture<HashMap<String, Double>> future = executorBuilder.execute();
-                System.out.println(future);
                 if (future != null) {
                     try {
                         positions = future.get();

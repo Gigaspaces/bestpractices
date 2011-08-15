@@ -1,6 +1,8 @@
 package org.openspaces.ece.client.swing;
 
 import org.openspaces.ece.client.ClientLogger;
+import org.openspaces.ece.client.ContainsAdmin;
+import org.openspaces.ece.client.ContainsResources;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;

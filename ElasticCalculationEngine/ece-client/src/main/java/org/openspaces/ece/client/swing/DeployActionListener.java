@@ -15,6 +15,7 @@ import org.openspaces.admin.gsm.GridServiceManager;
 import org.openspaces.admin.pu.ProcessingUnit;
 import org.openspaces.admin.pu.ProcessingUnitDeployment;
 import org.openspaces.admin.pu.ProcessingUnits;
+import org.openspaces.ece.client.ContainsResources;
 
 public class DeployActionListener implements ActionListener {
 	StatefulPUPanel panel;

@@ -7,6 +7,7 @@ import org.openspaces.admin.Admin;
 import org.openspaces.admin.AdminFactory;
 import org.openspaces.admin.gsa.GridServiceAgent;
 import org.openspaces.ece.client.ClientLogger;
+import org.openspaces.ece.client.ContainsAdmin;
 
 public class AcquireAdminAction implements Runnable {
 	ContainsAdmin adminContainer;

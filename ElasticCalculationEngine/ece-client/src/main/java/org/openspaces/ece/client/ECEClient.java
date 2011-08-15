@@ -1,7 +1,6 @@
 package org.openspaces.ece.client;
 
 import org.openspaces.ece.client.clients.NoWorkersAvailableException;
-import org.openspaces.ece.client.swing.ContainsAdmin;
 
 public interface ECEClient {
     void issueTrades();

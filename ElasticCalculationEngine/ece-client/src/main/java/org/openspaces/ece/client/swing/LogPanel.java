@@ -60,6 +60,7 @@ public class LogPanel extends JPanel implements ClientLogger {
 				formatter.format(format, args);
 				txtLog.append(output.toString()
 						+ System.getProperty("line.separator"));
+                txtLog.invalidate();
 			}
 		});
 	}

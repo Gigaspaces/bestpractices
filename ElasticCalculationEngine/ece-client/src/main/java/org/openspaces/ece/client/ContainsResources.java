@@ -1,4 +1,4 @@
-package org.openspaces.ece.client.swing;
+package org.openspaces.ece.client;
 
 import java.io.File;
 import java.util.Map;
