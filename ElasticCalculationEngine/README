@@ -1,0 +1,101 @@
+                     GigaSpaces' Elastic Calculation Engine
+
+Building
+
+  Requirements
+
+   The requirements for building the Elastic Calculation Engine are as
+   follows:
+
+     * Maven 3
+     * Java 6
+     * GigaSpaces XAP 8.0.4 or later
+     * (optional) git
+
+  Downloading the source
+
+   The source for the GigaSpaces "Best Practices" project, which includes the
+   Elastic Calculation Engine, can be retrieved from github with the
+   following command line:
+
+ git clone git@github.com:Gigaspaces/bestpractices.git
+
+  Building the application
+
+   To build the application, first make sure you have installed the Maven
+   artifacts for GigaSpaces XAP (which can be installed by changing to the
+   GigaSpaces XAP installation directory, then changing to the ./tools/maven
+   directory, and executing installmavenrep or installmavenrep.sh, for
+   Windows and Unix OSes, respectively).
+
+   Then change to the ElasticCalculationEngine directory in the bestpractices
+   project directory, and run Maven:
+
+ mvn package
+
+   After Maven has downloaded its requirements, you should have a fully build
+   Elastic Calculation engine, although artifacts will still be located in
+   the subproject directories.
+
+Running
+
+   There are two primary ways to run the Elastic Calculation Engine client.
+   One is by running an internal GS-Agent, and the other is by relying on the
+   Elastic Calculation Engine client application to start the GS-Agent
+   internally.
+
+   Which mode should you prefer? It's entirely up to you. Running the
+   GS-Agent manually removes its lifecycle from the client application;
+   there's really no applicable difference after that.
+
+   For the sake of your sanity and everyone else's, set an environment
+   variable (GSHOME) to the GigaSpaces installation directory. Thus echo
+   $GSHOME will show you the GigaSpaces home directory location); the Windows
+   equivalent is echo %GSHOME%.
+
+   If you plan on running the GS-Agent externally to the ECE Client
+   application, go to $GSHOME/bin and start an agent:
+
+ rem Windows
+ gs-agent gsa.gsc 4
+
+ # UNIX
+ gs-agent.sh gsa.gsc 4
+
+   To run the client, change to the
+   ElasticCalculationEngine/ece-client/target directory, and run the jar:
+
+ java -jar ece-client.jar
+
+   If you chose not to run an external GS-Agent, the client application will
+   attempt to start a managed GS-Agent instance, and will poll the Agent
+   until it acquires a valid reference.
+
+   The remaining steps to run the calculation engine are:
+
+    1. Deploy the stateful processing unit (the data grid)
+    2. Deploy the stateless processing unit (the worker nodes)
+    3. Issue a request for processing trades
+
+   To deploy the stateful processing unit, choose the "Deployment" tab, and
+   select the "Deploy" button alongside the "ece-datagrid" entry.
+
+   To deploy the stateless processing unit, after the stateful processing
+   unit has deployed, select "Deploy" alongside the "ece-worker" entry. You
+   can scale the processing power up and down by adding extra nodes (the
+   "Add" and "Remove" buttons).
+
+   Running the actual calculations is very simple.
+
+    1. Change to the "Execution" tab.
+    2. "Master/Worker" is the default mode; if you desire the Task Executor
+       mode, check the Executor checkbox.
+    3. Set "Trades" to the value you desire.
+    4. Set "Iterations" to the number of iterations.
+    5. Select "Run."
+
+About GigaSpaces XAP
+
+   XAP, The "Extreme Application Platform," is GigaSpaces Technologies'
+   distributed application platform, providing horizontal scalability and
+   interoperability to applications written on the Java and .NET platforms.
