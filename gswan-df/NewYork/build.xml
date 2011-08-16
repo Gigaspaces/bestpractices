@@ -1,0 +1,189 @@
+<?xml version="1.0"?>
+<project name="training-base" default="usage" basedir=".">
+    <property environment="env" />
+    <property name="GIGASPACES_HOME" value="${env.GIGASPACES_HOME}" />
+    <property name="src" value="${basedir}/src" />
+    <property name="classes" value="${basedir}/target/classes" />
+    <property name="dist" value="${basedir}/dist" />
+    <property name="deploy" value="${GIGASPACES_HOME}/deploy/${ant.project.name}" />
+    <property name="junitReports" value="junit-reports" />
+    <path id="all-libs">
+        <fileset dir="${GIGASPACES_HOME}/lib">
+            <include name="**/*.jar" />
+        </fileset>
+    </path>
+    <target name="usage">
+        <echo message="" />
+        <echo message="Training build script" />
+        <echo message="-----------------------------------------" />
+        <echo message="" />
+        <echo message="Among the available targets are:" />
+        <echo message="" />
+        <echo message="clean --&gt; Clean all output dirs" />
+        <echo message="build --&gt; Build the project" />
+        <echo message="dist --&gt; Build the distribution" />
+        <echo message="copy --&gt; Build and copy the project in deploy directory" />
+        <echo message="deploy --&gt; Build, copy and deploy the project" />
+        <echo message="undeploy --&gt; Undeploy the project" />
+        <echo message="test --&gt; Test test-cases" />
+        <echo message="" />
+    </target>
+    <target name="clean">
+        <delete dir="${classes}" />
+        <delete dir="${dist}" />
+        <delete dir="${junitReports}" />
+    </target>
+    <target name="build" depends="clean"></target>
+    <target name="dist" depends="build">
+        <mkdir dir="${dist}" />
+        <copy todir="${dist}">
+            <fileset dir="${classes}" />
+        </copy>
+    </target>
+    <macrodef name="all">
+        <attribute name="target" />
+        <sequential>
+            <ant dir="consoleAuction" inheritAll="false" target="@{target}" />
+            <ant dir="consoleAuctionInSpring" inheritAll="false" target="@{target}" />
+            <ant dir="eAuctionModel" inheritAll="false" target="@{target}" />
+            <ant dir="eAuctionBidFinder" inheritAll="false" target="@{target}" />
+            <ant dir="eAuctionCalculator" inheritAll="false" target="@{target}" />
+            <ant dir="eAuctionClient" inheritAll="false" target="@{target}" />
+            <ant dir="eAuctionMuleClient" inheritAll="false" target="@{target}" />
+            <ant dir="eAuctionConfigurer" inheritAll="false" target="@{target}" />
+            <ant dir="eAuctionMirror" inheritAll="false" target="@{target}" />
+            <ant dir="eAuctionScripting" inheritAll="false" target="@{target}" />
+            <ant dir="eAuctionSpace" inheritAll="false" target="@{target}" />
+            <ant dir="eAuctionTest" inheritAll="false" target="@{target}" />
+            <ant dir="eAuctionTop10" inheritAll="false" target="@{target}" />
+            <ant dir="eAuctionTradeMonitor" inheritAll="false" target="@{target}" />
+            <ant dir="eAuctionUserWriter" inheritAll="false" target="@{target}" />
+            <ant dir="eAuctionWeb" inheritAll="false" target="@{target}" />
+        </sequential>
+    </macrodef>
+    <target name="all-clean">
+        <all target="clean" />
+    </target>
+    <target name="all-dist">
+        <all target="dist" />
+        <mkdir dir="${dist}" />
+        <copy todir="${dist}" flatten="true">
+            <fileset dir=".">
+                <include name="**/eAuction*/dist/*.jar" />
+                <include name="**/eAuction*/dist/*.war" />
+            </fileset>
+        </copy>
+    </target>
+    <target name="copy" depends="dist">
+        <delete dir="${deploy}" />
+        <mkdir dir="${deploy}" />
+        <copy todir="${deploy}">
+            <fileset dir="${dist}" />
+        </copy>
+    </target>
+    <target name="deploy" depends="copy">
+        <deploy name="${ant.project.name}" />
+    </target>
+    <target name="deployUnicast" depends="copy">
+        <deployUnicast name="${ant.project.name}" />
+    </target>
+    <target name="undeploy">
+        <undeploy name="${ant.project.name}" />
+    </target>
+    <macrodef name="build">
+        <attribute name="src" />
+        <attribute name="classes" />
+        <attribute name="additional-classpath" default="all-libs" />
+        <sequential>
+            <mkdir dir="@{classes}" />
+            <javac destdir="@{classes}" source="1.5" target="1.5" debug="on" deprecation="false" optimize="false" failonerror="true">
+                <src path="@{src}" />
+                <classpath refid="all-libs" />
+                <classpath refid="@{additional-classpath}" />
+            </javac>
+            <available property="resourcesPresent" file="@{src}/main/resources"></available>
+            <antcall target="copyresources">
+                <param name="src" value="@{src}" />
+                <param name="classes" value="@{classes}" />
+            </antcall>
+        </sequential>
+    </macrodef>
+    <target name="test">
+        <mkdir dir="${junitReports}" />
+        <junit printsummary="yes" haltonfailure="yes">
+            <classpath>
+                <fileset dir="${GIGASPACES_HOME}/lib">
+                    <include name="**/*.jar" />
+                    <exclude name="**/*ant*.jar" />
+                </fileset>
+                <fileset dir="${dist}/lib">
+                    <include name="**/*.jar" />
+                </fileset>
+                <path location="${classes}"></path>
+                <path location="src/test/resources"></path>
+            </classpath>
+            <formatter type="plain" />
+            <batchtest fork="yes" todir="${junitReports}">
+                <fileset dir="src/test/java">
+                    <include name="**/*.java" />
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+    <target name="copyresources" if="resourcesPresent">
+        <copy todir="${classes}" preservelastmodified="true" flatten="false">
+            <fileset dir="${src}/main/resources">
+                <exclude name="**/webapp/**" />
+                <include name="**/*.properties" />
+                <include name="**/*.au" />
+                <include name="**/*.handlers" />
+                <include name="**/*.schemas" />
+                <include name="**/*.xml" />
+                <include name="**/*.dtd" />
+                <include name="**/*.xsd" />
+                <include name="**/*.sql" />
+                <include name="**/*.groovy" />
+                <include name="**/*.jruby" />
+                <include name="**/*.vm" />
+            </fileset>
+        </copy>
+    </target>
+    <macrodef name="deploy">
+        <attribute name="name" />
+        <sequential>
+            <java classname="org.openspaces.pu.container.servicegrid.deploy.Deploy" fork="false">
+                <classpath refid="all-libs" />
+                <classpath path="${classes}" />
+                <arg value="-groups" />
+                <arg value="${env.LOOKUPGROUPS}" />
+                <arg value="@{name}" />
+            </java>
+        </sequential>
+    </macrodef>
+    <macrodef name="deployUnicast">
+        <attribute name="name" />
+        <sequential>
+            <java classname="org.openspaces.pu.container.servicegrid.deploy.Deploy" fork="false">
+                <classpath refid="all-libs" />
+                <classpath path="${classes}" />
+                <arg value="-locators" />
+                <arg value="${env.LOOKUPLOCATORS}" />
+                <arg value="-groups" />
+                <arg value="${env.LOOKUPGROUPS}" />
+                <arg value="@{name}" />
+            </java>
+        </sequential>
+    </macrodef>
+    <macrodef name="undeploy">
+        <attribute name="name" />
+        <sequential>
+            <java classname="org.openspaces.pu.container.servicegrid.deploy.Undeploy" fork="false">
+                <classpath refid="all-libs" />
+                <classpath path="${classes}" />
+                <arg value="-groups" />
+                <arg value="${env.LOOKUPGROUPS}" />
+                <arg value="@{name}" />
+            </java>
+        </sequential>
+    </macrodef>
+</project>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+        xmlns:os-core="http://www.openspaces.org/schema/core"
+	xmlns:os-events="http://www.openspaces.org/schema/events"
+	xmlns:os-remoting="http://www.openspaces.org/schema/remoting"
+	xmlns:os-sla="http://www.openspaces.org/schema/sla"
+        xmlns:os-gateway="http://www.openspaces.org/schema/core/gateway"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+       http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.openspaces.org/schema/core 
+       http://www.openspaces.org/schema/8.0/core/openspaces-core.xsd
+       http://www.openspaces.org/schema/events 
+       http://www.openspaces.org/schema/8.0/events/openspaces-events.xsd
+       http://www.openspaces.org/schema/remoting 
+       http://www.openspaces.org/schema/8.0/remoting/openspaces-remoting.xsd
+       http://www.openspaces.org/schema/sla 
+       http://www.openspaces.org/schema/8.0/sla/openspaces-sla.xsd
+       http://www.openspaces.org/schema/core/gateway 
+       http://www.openspaces.org/schema/8.0/core/gateway/openspaces-gateway.xsd">
+
+		<os-core:giga-space-context />
+		 <os-events:annotation-support />
+		<os-remoting:annotation-support />
+
+        <os-core:space id="space" url="/./e-auction-space?locators=${LOOKUPLOCATORS}" gateway-targets="gatewayTargets"  lookup-groups="${LOOKUPGROUPS}" />
+
+        <os-gateway:targets id="gatewayTargets" local-gateway-name="NEWYORK">
+          <os-gateway:target name="LONDON"/>    	    	        	        
+        </os-gateway:targets>	
+
+</beans>
+
+

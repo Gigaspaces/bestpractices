@@ -1,10 +1,141 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE HTML>
 <html>
 <head>
-    <title></title>
+    <title>GigaSpaces' Elastic Calculation Engine</title>
+    <style>
+        code {
+            background-color: silver;
+            font-family: Consolas, monospace;
+        }
+
+        body {
+            width: 80%;
+            margin-left: 10%;
+        }
+    </style>
 </head>
 <body>
+<h1>GigaSpaces' Elastic Calculation Engine</h1>
+<article>
+    <h2>Building</h2>
 
+    <h3>Requirements</h3>
+
+    <p>
+        The requirements for building the Elastic Calculation Engine are as follows:
+    </p>
+    <ul>
+        <li>Maven 3</li>
+        <li>Java 6</li>
+        <li>GigaSpaces XAP 8.0.4 or later</li>
+        <li>(optional) git</li>
+    </ul>
+
+    <h3>Downloading the source</h3>
+
+    <p>
+        The source for the GigaSpaces "Best Practices" project, which includes the Elastic Calculation Engine, can be
+        retrieved from github with the following command line:
+    </p>
+
+    <pre>git clone git@github.com:Gigaspaces/bestpractices.git</pre>
+
+    <h3>Building the application</h3>
+
+    <p>
+        To build the application, first make sure you have installed the Maven artifacts for GigaSpaces XAP (which can
+        be installed by changing to the GigaSpaces XAP installation directory, then changing to the
+        <code>./tools/maven</code> directory, and executing <code>installmavenrep</code> or
+        <code>installmavenrep.sh</code>, for Windows and Unix OSes, respectively).
+    </p>
+
+    <p>
+        Then change to the <code>ElasticCalculationEngine</code> directory in the <code>bestpractices</code> project
+        directory, and run Maven:
+    </p>
+
+    <pre>mvn package</pre>
+
+    <p>
+        After Maven has downloaded its requirements, you should have a fully build Elastic Calculation engine, although
+        artifacts will still be located in the subproject directories.
+    </p>
+</article>
+<article>
+    <h2>Running</h2>
+
+    <p>
+        There are two primary ways to run the Elastic Calculation Engine client. One is by running an internal GS-Agent,
+        and the other is by relying on the Elastic Calculation Engine client application to start the GS-Agent
+        internally.
+    </p>
+
+    <p>
+        Which mode should you prefer? It's entirely up to you. Running the GS-Agent manually removes its lifecycle from
+        the client application; there's really no applicable difference after that.
+    </p>
+
+    <p>
+        For the sake of your sanity and everyone else's, set an environment variable (<code>GSHOME</code>) to the
+        GigaSpaces installation directory. Thus <code>echo $GSHOME</code> will show you the GigaSpaces home directory
+        location); the Windows equivalent is <code>echo %GSHOME%</code>.
+    </p>
+
+    <p>
+        If you plan on running the GS-Agent externally to the ECE Client application, go to <code>$GSHOME/bin</code>
+        and start an agent:
+    </p>
+    <pre>rem Windows<br/>gs-agent gsa.gsc 4<br/><br/># UNIX<br/>gs-agent.sh gsa.gsc 4</pre>
+
+    <p>
+        To run the client, change to the <code>ElasticCalculationEngine/ece-client/target</code> directory, and run the
+        jar:
+    </p>
+
+    <pre>java -jar ece-client.jar</pre>
+
+    <p>
+        If you chose not to run an external GS-Agent, the client application will attempt to start a managed GS-Agent
+        instance, and will poll the Agent until it acquires a valid reference.
+    </p>
+
+    <p>
+        The remaining steps to run the calculation engine are:
+    </p>
+
+    <ol>
+        <li>Deploy the stateful processing unit (the data grid)</li>
+        <li>Deploy the stateless processing unit (the worker nodes)</li>
+        <li>Issue a request for processing trades</li>
+    </ol>
+
+    <p>
+        To deploy the stateful processing unit, choose the "Deployment" tab, and select the "Deploy" button alongside
+        the "ece-datagrid" entry.
+    </p>
+
+    <p>
+        To deploy the stateless processing unit, after the stateful processing unit has deployed, select "Deploy"
+        alongside the "ece-worker" entry. You can scale the processing power up and down by adding extra nodes (the
+        "Add" and "Remove" buttons).
+    </p>
+
+    <p>Running the actual calculations is very simple.</p>
+    <ol>
+        <li>Change to the "Execution" tab.</li>
+        <li>"Master/Worker" is the default mode; if you desire the Task Executor mode, check the Executor checkbox.</li>
+        <li>Set "Trades" to the value you desire.</li>
+        <li>Set "Iterations" to the number of iterations.</li>
+        <li>Select "Run."</li>
+    </ol>
+</article>
+<article>
+    <h2>About GigaSpaces XAP</h2>
+
+    <p>
+        XAP, The "Extreme Application Platform," is GigaSpaces Technologies' distributed application platform, providing
+        horizontal scalability and interoperability to applications written on the Java and .NET platforms.
+    </p>
+</article>
 </body>
 </html>

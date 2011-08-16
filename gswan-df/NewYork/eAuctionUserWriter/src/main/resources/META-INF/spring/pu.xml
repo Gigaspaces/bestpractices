@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans 	xmlns="http://www.springframework.org/schema/beans" 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 	xmlns:context="http://www.springframework.org/schema/context" 	xmlns:os-core="http://www.openspaces.org/schema/core" 	xmlns:os-events="http://www.openspaces.org/schema/events" 	xmlns:os-remoting="http://www.openspaces.org/schema/remoting" 	xmlns:os-sla="http://www.openspaces.org/schema/sla" 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.openspaces.org/schema/core http://www.openspaces.org/schema/core/openspaces-core.xsd http://www.openspaces.org/schema/events http://www.openspaces.org/schema/events/openspaces-events.xsd http://www.openspaces.org/schema/remoting http://www.openspaces.org/schema/remoting/openspaces-remoting.xsd http://www.openspaces.org/schema/sla http://www.openspaces.org/schema/sla/openspaces-sla.xsd">
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="properties">
+            <props>
+                <prop key="LOOKUPLOCATORS"></prop>
+            </props>
+        </property>
+    </bean>
+<!-- 
+        
+                        ANNOTATION AND COMPONENT SCAN CONFIGURATION 
+                
+        -->
+<!-- Enable scan for OpenSpaces and Spring components -->
+    <context:component-scan base-package="com.eauction.gigaspaces" />
+<!-- Enables the usage of @GigaSpaceContext annotation based injection. -->
+    <os-core:giga-space-context />
+<!--  Enables Spring Annotation configuration  -->
+    <context:annotation-config />
+<!-- Enables using @Polling and @Notify annotations -->
+    <os-events:annotation-support />
+<!-- Enables using @RemotingService as well as @AsyncProxy (and others) annotations -->
+    <os-remoting:annotation-support />
+<!--  
+        
+                        SPACE AND SLA CONFIGURATION
+        
+         -->
+<!--
+        A bean representing a space (an IJSpace implementation).
+
+        Note, we do not specify here the cluster topology of the space. It is declared outside of
+        the processing unit or within the SLA bean.
+    -->
+    <os-sla:sla cluster-schema="default"></os-sla:sla>
+    <os-core:space id="space" url="jini://*/*/e-auction-space?locators=${LOOKUPLOCATORS}" lookup-groups="${LOOKUPGROUPS}"></os-core:space>
+<!-- OpenSpaces simplified space API built on top of IJSpace/JavaSpace. -->
+    <os-core:giga-space id="gigaSpace" space="space" />
+    <bean id="userList" class="java.util.LinkedList">
+        <constructor-arg>
+            <list>
+                <value>James Johnson</value>
+                <value>Peter Gardener</value>
+                <value>Andrei Saizovsky</value>
+                <value>Petr Kirul</value>
+                <value>Gerard Bourtagne</value>
+                <value>Hans Freihof</value>
+                <value>Sami Filppula</value>
+                <value>Niklas Nilsson</value>
+                <value>Marian Varga</value>
+                <value>Sigur Briem</value>
+            </list>
+        </constructor-arg>
+    </bean>
+</beans>
