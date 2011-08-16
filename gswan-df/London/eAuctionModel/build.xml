@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<project name="eAuctionModel" default="dist" basedir=".">
+    <import file="${basedir}/../build.xml" />
+    <target name="build">
+        <build src="${src}" classes="${classes}" />
+    </target>
+    <target name="dist" depends="build">
+        <mkdir dir="${dist}" />
+        <jar destfile="${dist}/${ant.project.name}.jar" basedir="${classes}" />
+    </target>
+</project>

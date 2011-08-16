@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<project name="eAuctionSpace" default="dist" basedir=".">
+    <import file="${basedir}/../build.xml" />
+    <target name="dist" depends="build">
+        <mkdir dir="${dist}" />
+        <mkdir dir="${dist}/lib" />
+        <available property="modelPresent" file="../eAuctionModel/dist/eAuctionModel.jar" />
+        <antcall target="buildModel" />
+        <copy todir="${dist}/lib" file="../eAuctionModel/dist/eAuctionModel.jar" />
+        <path id="libs">
+            <fileset dir="${dist}/lib">
+                <include name="**/*.jar" />
+            </fileset>
+        </path>
+        <build src="${src}" classes="${classes}" additional-classpath="libs" />
+        <copy todir="${dist}">
+            <fileset dir="${classes}" />
+        </copy>
+        <jar basedir="${dist}" file="${dist}/${ant.project.name}.jar">
+            <exclude name="${ant.project.name}.jar" />
+        </jar>
+<!-- antcall target="test" /-->
+    </target>
+    <target name="buildModel" unless="modelPresent">
+        <echo message="Building model" />
+        <ant antfile="../eAuctionModel/build.xml" target="dist" inheritAll="false" />
+    </target>
+    <macrodef name="deploy">
+        <attribute name="name" />
+        <sequential>
+            <java classname="org.openspaces.pu.container.servicegrid.deploy.Deploy" fork="false">
+                <classpath refid="all-libs" />
+                <classpath path="${classes}" />
+                <arg value="-timeout" />
+                <arg value="30000" />
+                <arg value="-groups" />
+                <arg value="${env.LOOKUPGROUPS}" />
+                <arg value="@{name}" />
+            </java>
+        </sequential>
+    </macrodef>
+</project>
