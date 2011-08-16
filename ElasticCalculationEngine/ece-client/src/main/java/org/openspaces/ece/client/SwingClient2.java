@@ -5,6 +5,7 @@ import com.beust.jcommander.Parameter;
 import org.openspaces.admin.Admin;
 import org.openspaces.admin.gsa.GridServiceAgent;
 import org.openspaces.ece.client.builders.ClientLoggerBuilder;
+import org.openspaces.ece.client.i18n.Messages;
 import org.openspaces.ece.client.swing.*;
 
 import javax.swing.*;
@@ -19,6 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class SwingClient2 implements ContainsAdmin, ContainsResources {
+    // this is used for async initialization
     ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime()
             .availableProcessors());
     private JFrame frmElasticCalculationEngine;
@@ -97,8 +99,9 @@ public class SwingClient2 implements ContainsAdmin, ContainsResources {
      * Initialize the contents of the frame.
      */
     private void initialize() {
+        Messages messages= Messages.getInstance();
         frmElasticCalculationEngine = new JFrame();
-        frmElasticCalculationEngine.setTitle("Elastic Calculation Engine");
+        frmElasticCalculationEngine.setTitle(messages.getMessage("window.title", "Elastic Calculation Engine"));
         frmElasticCalculationEngine.setBounds(100, 100, 650, 450);
         frmElasticCalculationEngine
                 .setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -123,7 +126,7 @@ public class SwingClient2 implements ContainsAdmin, ContainsResources {
                 gbc_tabbedPane);
 
         JPanel panelDeployment = new JPanel();
-        tabbedPane.addTab("Deployment", null, panelDeployment, null);
+        tabbedPane.addTab(messages.getMessage("tab.title.deployment","Deployment"), null, panelDeployment, null);
         GridBagLayout gbl_panelDeployment = new GridBagLayout();
         gbl_panelDeployment.columnWidths = new int[]{637, 0};
         gbl_panelDeployment.rowHeights = new int[]{20, 20, 0};
@@ -148,13 +151,12 @@ public class SwingClient2 implements ContainsAdmin, ContainsResources {
         panelDeployment.add(workerPanel, gbc_workerPanel);
 
         JPanel panelExecution = new JPanel();
-        tabbedPane.addTab("Execution", null, panelExecution, null);
+        tabbedPane.addTab(messages.getMessage("tab.title.execution","Execution"), null, panelExecution, null);
         panelExecution.setLayout(new BorderLayout(0, 0));
 
         logPanel = new ClientLoggerBuilder().swing().build();
         executionPanel = new ExecutionPanel(this, this.logPanel, group, locator);
         panelExecution.add(executionPanel, BorderLayout.CENTER);
-
 
         GridBagConstraints gbc_logPanel = new GridBagConstraints();
         gbc_logPanel.weighty = 3.0;

@@ -1,22 +1,19 @@
 package org.openspaces.ece.client.clients;
 
 import com.gigaspaces.async.AsyncFuture;
-import org.openspaces.admin.Admin;
-import org.openspaces.admin.AdminFactory;
-import org.openspaces.admin.pu.ProcessingUnit;
-import org.openspaces.admin.pu.ProcessingUnitInstance;
 import org.openspaces.calcengine.common.CalculateNPVUtil;
 import org.openspaces.core.ExecutorBuilder;
 import org.openspaces.ece.client.executors.AnalysisTask;
 import org.openspaces.ece.client.executors.NPVResultsReducer;
+import org.openspaces.ece.client.i18n.Messages;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 public class ECEExecutorClient extends AbstractECEClient {
     double rates[] = {2, 3, 4, 5, 6, 7, 8};
+    Messages messages = Messages.getInstance();
 
     public ECEExecutorClient() {
     }
@@ -33,26 +30,6 @@ public class ECEExecutorClient extends AbstractECEClient {
     }
 
     @Override
-    public void processingUnitInstanceAdded(ProcessingUnitInstance processingUnitInstance) {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        workers = worker.getNumberOfInstances();
-    }
-
-    @Override
-    public void processingUnitInstanceRemoved(ProcessingUnitInstance processingUnitInstance) {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        workers= worker.getNumberOfInstances();
-    }
-
-    @Override
     public void issueTrades() {
         Integer[] ids = new Integer[getMaxTrades()];
         for (int i = 0; i < getMaxTrades(); i++) {
@@ -64,7 +41,7 @@ public class ECEExecutorClient extends AbstractECEClient {
 
         for (int c = 0; c < getMaxIterations(); c++) {
             Map<String, Double> positions;
-            logger.log("Calculating Net present value for %d Trades ...", getMaxTrades());
+            logger.log(messages.getMessage("npv.header","Calculating Net present value for %d Trades ..."), getMaxTrades());
             ExecutorBuilder<HashMap<String, Double>, HashMap<String, Double>> executorBuilder =
                     space.executorBuilder(new NPVResultsReducer());
 
@@ -89,7 +66,7 @@ public class ECEExecutorClient extends AbstractECEClient {
                         }
                         Thread.sleep(1000);
                     } catch (Exception ignored) {
-                       ignored.printStackTrace();
+                        ignored.printStackTrace();
                     }
                 }
             }

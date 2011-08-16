@@ -10,7 +10,6 @@
 
 	<artifactId>ece-client</artifactId>
 
-
 	<dependencies>
 		<dependency>
 			<groupId>com.gigaspaces</groupId>
