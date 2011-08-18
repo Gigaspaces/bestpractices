@@ -78,8 +78,8 @@ public class SwingClient {
 
 		valueTable = new JTable();
 		valueTable.setModel(new WANDemoTableModel(configuration.getSpace()));
-		frame.getContentPane().add(valueTable, BorderLayout.CENTER);
+		JScrollPane scrollPane = new JScrollPane(valueTable);
+		frame.getContentPane().add(scrollPane, BorderLayout.CENTER);
 		System.out.println(frame);
 	}
-
 }

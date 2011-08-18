@@ -11,7 +11,7 @@
         <os-gateway:delegation target="ONE"/>
     </os-gateway:delegator>
 
-    <os-gateway:sink id="sink" local-gateway-name="ONE" gateway-lookups="gatewayLookups"
+    <os-gateway:sink id="sink" local-gateway-name="TWO" gateway-lookups="gatewayLookups"
                      local-space-url="jini://*/*/e-auction-space">
         <os-gateway:sources>
             <os-gateway:source name="ONE"/>
