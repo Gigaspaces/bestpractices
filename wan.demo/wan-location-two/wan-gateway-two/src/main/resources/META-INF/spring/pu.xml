@@ -18,7 +18,11 @@
         </os-gateway:sources>
     </os-gateway:sink>
 
-    <import resource="classpath:/gateway-lookups.xml"/>
+    <os-gateway:lookups id="gatewayLookups">
+        <os-gateway:lookup gateway-name="ONE" host="localhost" discovery-port="10768" communication-port="7000"/>
+        <os-gateway:lookup gateway-name="TWO" host="localhost" discovery-port="10769" communication-port="8000"/>
+    </os-gateway:lookups>
+
 
 </beans>
 

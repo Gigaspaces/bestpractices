@@ -11,14 +11,6 @@
 
     <artifactId>wan-gateway-one</artifactId>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.openspaces.wan.demo</groupId>
-            <artifactId>wan-model</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
-
     <build>
         <finalName>${project.artifactId}</finalName>
         <plugins>

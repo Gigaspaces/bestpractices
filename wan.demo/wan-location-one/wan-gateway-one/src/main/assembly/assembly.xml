@@ -21,6 +21,7 @@
             <useTransitiveDependencies>false</useTransitiveDependencies>
             <outputDirectory>lib</outputDirectory>
             <excludes>
+                <exclude>org.openspaces.wan.demo:wan-model</exclude>
                 <exclude>org.aspectj:aspectjrt</exclude>
             </excludes>
         </dependencySet>
