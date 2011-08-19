@@ -18,12 +18,7 @@
         </os-gateway:sources>
     </os-gateway:sink>
 
-    <os-gateway:lookups id="gatewayLookups">
-        <os-gateway:lookup gateway-name="ONE" host="localhost" discovery-port="10101" communication-port="7100"/>
-        <os-gateway:lookup gateway-name="TWO" host="localhost" discovery-port="10102" communication-port="8100"/>
-    </os-gateway:lookups>
-    <!--The above ports and host names are randomly selected and has no meaning, all sites could designate the same ports as well-->
-
+    <import resource="classpath:/gateway-lookups.xml"/>
 </beans>
 
 

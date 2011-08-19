@@ -21,6 +21,11 @@
             <artifactId>jcommander</artifactId>
             <version>1.17</version>
         </dependency>
+        <dependency>
+            <groupId>com.gigaspaces</groupId>
+            <artifactId>gs-openspaces</artifactId>
+            <version>${gsVersion}</version>
+        </dependency>
     </dependencies>
 
 </project>

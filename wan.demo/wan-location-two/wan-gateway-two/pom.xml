@@ -9,9 +9,16 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>wan-gateway-two</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>org.openspaces.wan.demo</groupId>
+            <artifactId>wan-model</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 
-     <build>
+    <artifactId>wan-gateway-two</artifactId>
+    <build>
         <finalName>${project.artifactId}</finalName>
         <plugins>
             <plugin>
