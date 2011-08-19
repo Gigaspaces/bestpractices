@@ -56,7 +56,6 @@ public class UpdateDemoEntryServiceImpl implements UpdateDemoEntryService {
 		Runnable runnable = new Runnable() {
 			@Override
 			public void run() {
-				System.out.println("In runnable");
 				try {
 					StringBuilder sb = new StringBuilder();
 					WANDemoEntry template = new WANDemoEntry();
