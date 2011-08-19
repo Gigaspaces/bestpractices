@@ -33,8 +33,6 @@ public class SwingClient {
 			public void run() {
 				try {
 					SwingClient window = new SwingClient(configuration);
-					System.out.println(window);
-					System.out.println(window.frame);
 					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -80,6 +78,5 @@ public class SwingClient {
 		valueTable.setModel(new WANDemoTableModel(configuration.getSpace()));
 		JScrollPane scrollPane = new JScrollPane(valueTable);
 		frame.getContentPane().add(scrollPane, BorderLayout.CENTER);
-		System.out.println(frame);
 	}
 }
