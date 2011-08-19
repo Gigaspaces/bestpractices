@@ -12,15 +12,15 @@
     </os-gateway:delegator>
 
     <os-gateway:sink id="sink" local-gateway-name="TWO" gateway-lookups="gatewayLookups"
-                     local-space-url="jini://*/*/e-auction-space">
+                     local-space-url="jini://*/*/wanSpaceTWO">
         <os-gateway:sources>
             <os-gateway:source name="ONE"/>
         </os-gateway:sources>
     </os-gateway:sink>
 
     <os-gateway:lookups id="gatewayLookups">
-        <os-gateway:lookup gateway-name="ONE" host="localhost" discovery-port="10001" communication-port="7100"/>
-        <os-gateway:lookup gateway-name="TWO" host="localhost" discovery-port="10002" communication-port="8100"/>
+        <os-gateway:lookup gateway-name="ONE" host="localhost" discovery-port="10001" communication-port="7000"/>
+        <os-gateway:lookup gateway-name="TWO" host="localhost" discovery-port="10002" communication-port="8000"/>
     </os-gateway:lookups>
     <!--The above ports and host names are randomly selected and has no meaning, all sites could designate the same ports as well-->
 

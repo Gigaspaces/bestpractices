@@ -19,7 +19,7 @@
 	<!-- Enable support for @Polling annotation -->
 	<os-events:annotation-support />
 
-	<os-core:space id="space" url="/./e-auction-space" gateway-targets="gatewayTargets" />
+	<os-core:space id="space" url="/./wanSpaceONE" gateway-targets="gatewayTargets" />
 	<os-core:giga-space id="gigaSpace" space="space"
 		tx-manager="transactionManager" />
 
@@ -30,6 +30,7 @@
 		class="org.openspaces.wan.demo.service.impl.UpdateDemoEntryServiceImpl">
 		<property name="root" value="one" />
 	</bean>
+
 	<os-gateway:targets id="gatewayTargets"
 		local-gateway-name="ONE">
 		<os-gateway:target name="TWO" />
