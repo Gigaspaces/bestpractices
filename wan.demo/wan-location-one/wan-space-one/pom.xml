@@ -10,7 +10,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>wan-space-one</artifactId>
-
+    <name>wan-space-one</name>
+    
     <dependencies>
         <dependency>
             <groupId>org.openspaces.wan.demo</groupId>

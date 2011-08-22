@@ -7,6 +7,8 @@
     <groupId>org.openspaces.wan.demo</groupId>
     <artifactId>wan.demo</artifactId>
     <version>1.0</version>
+    <name>wan.demo</name>
+    
     <modules>
         <module>wan-model</module>
         <module>wan-client</module>
