@@ -10,4 +10,4 @@ export LOOKUPGROUPS="TWO"
 export JAVA_OPTS="%JAVA_OPTS% -Dcom.sun.jini.reggie.initialUnicastDiscoveryPort=4266"
 export JAVA_OPTS="%JAVA_OPTS% -Dcom.gigaspaces.system.registryPort=10198"
 export JAVA_OPTS="%JAVA_OPTS% -Dcom.gigaspaces.start.httpPort=9913"
-$GS_HOME/bin/gs-agent.bat gsa.gsm 1 gsa.gsc 2
+$GSHOME/bin/gs-agent.bat gsa.gsm 1 gsa.gsc 2
