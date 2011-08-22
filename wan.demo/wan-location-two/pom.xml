@@ -10,6 +10,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>wan-location-two</artifactId>
+    <name>wan-location-two</name>
+    
     <packaging>pom</packaging>
     <modules>
         <module>wan-gateway-two</module>

@@ -10,7 +10,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>wan-gateway-one</artifactId>
-
+    <name>wan-gateway-one</name>
+    
     <build>
         <finalName>${project.artifactId}</finalName>
         <plugins>
