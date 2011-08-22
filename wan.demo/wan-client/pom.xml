@@ -37,7 +37,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>org.openspaces.ece.client.SwingClient2</mainClass>
+                            <mainClass>org.openspaces.wan.demo.client.SwingClient</mainClass>
                             <classpathPrefix>dependency/</classpathPrefix>
                         </manifest>
                     </archive>
