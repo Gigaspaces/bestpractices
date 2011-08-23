@@ -47,7 +47,7 @@ public class ProcessorIntegrationTest extends AbstractTestNGSpringContextTests{
         // verify it
         assertNotNull(result);
         assertTrue(result.isProcessed());
-        assertEquals("PROCESSED : " + data.getRawData(), result.getData());
+        assertTrue(result.getData().startsWith("PROCESSED : " + data.getRawData()));
     }
 
 }

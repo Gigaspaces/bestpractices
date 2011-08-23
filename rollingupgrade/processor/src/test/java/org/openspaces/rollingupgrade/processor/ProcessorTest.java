@@ -22,7 +22,7 @@ public class ProcessorTest {
 
         Data result = processor.processData(data);
         assertTrue(result.isProcessed());
-        assertEquals("PROCESSED : " + data.getRawData(), result.getData());
+        assertTrue(data.getData().startsWith("PROCESSED : "+data.getRawData()));
         assertEquals(data.getType(), result.getType());
     }
 }

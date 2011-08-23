@@ -4,6 +4,7 @@ import org.openspaces.rollingupgrade.common.Data;
 
 import org.openspaces.events.adapter.SpaceDataEvent;
 
+import java.util.Date;
 import java.util.logging.Logger;
 
 /**
@@ -39,7 +40,7 @@ public class Processor {
             // do nothing
         }
         data.setProcessed(true);
-        data.setData("PROCESSED : " + data.getRawData());
+        data.setData("PROCESSED : " + data.getRawData()+" at "+new Date());
         log.info(" ------ PROCESSED : " + data);
         return data;
     }
