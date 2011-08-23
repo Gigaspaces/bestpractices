@@ -35,4 +35,8 @@
             </os-events:annotation-adapter>
         </os-events:listener>
     </os-events:polling-container>
+
+<os-core:refreshable-context-loader id="refreshableBeans"
+              location="classpath:/META-INF/spring/refreshable-beans.xml"/>
+
 </beans>
