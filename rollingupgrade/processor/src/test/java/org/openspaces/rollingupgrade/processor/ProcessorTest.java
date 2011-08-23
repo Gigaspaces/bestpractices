@@ -2,8 +2,11 @@ package org.openspaces.rollingupgrade.processor;
 
 import org.openspaces.rollingupgrade.common.Data;
 
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 
 /**
@@ -18,8 +21,8 @@ public class ProcessorTest {
         Data data = new Data(1, "test");
 
         Data result = processor.processData(data);
-        assertEquals("verify that the data object was processed", true, result.isProcessed());
-        assertEquals("verify the data was processed", "PROCESSED : " + data.getRawData(), result.getData());
-        assertEquals("verify the type was not changed", data.getType(), result.getType());
+        assertTrue(result.isProcessed());
+        assertEquals("PROCESSED : " + data.getRawData(), result.getData());
+        assertEquals(data.getType(), result.getType());
     }
 }

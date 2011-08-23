@@ -1,18 +1,17 @@
 package org.openspaces.rollingupgrade.processor;
 
 import org.openspaces.rollingupgrade.common.Data;
-
-import org.junit.runner.RunWith;
-import org.junit.Before;
-import org.junit.After;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.openspaces.core.GigaSpace;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 
 /**
@@ -20,15 +19,14 @@ import org.openspaces.core.GigaSpace;
  * to the actual pu.xml. Writs an unprocessed Data to the Space, and verifies that it has been processed by
  * taking a processed one from the space.
  */
-@RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class ProcessorIntegrationTest {
+public class ProcessorIntegrationTest extends AbstractTestNGSpringContextTests{
 
     @Autowired
     GigaSpace gigaSpace;
 
-    @Before
-    @After
+    @BeforeMethod
+    @AfterMethod
     public void clearSpace() {
         gigaSpace.clear(null);
     }
@@ -47,8 +45,9 @@ public class ProcessorIntegrationTest {
         // wait for the result
         Data result = gigaSpace.take(template, 500);
         // verify it
-        assertNotNull("No data object was processed", result);
-        assertEquals("Processed Flag is false, data was not processed", true, result.isProcessed());
-        assertEquals("Processed text mismatch", "PROCESSED : " + data.getRawData(), result.getData());
+        assertNotNull(result);
+        assertTrue(result.isProcessed());
+        assertEquals("PROCESSED : " + data.getRawData(), result.getData());
     }
+
 }
