@@ -2,7 +2,6 @@ package org.openspaces.bestpractices.mirror.cassandra.common;
 
 import com.gigaspaces.datasource.*;
 import com.j_spaces.core.IGSEntry;
-import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.cassandra.serializers.StringSerializer;
 import me.prettyprint.cassandra.service.ThriftKsDef;
 import me.prettyprint.hector.api.Cluster;
@@ -21,8 +20,6 @@ import org.mvel2.MVEL;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
@@ -80,6 +77,7 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
 
     @Override
     public void executeBulk(List<BulkItem> bulkItems) throws DataSourceException {
+        System.out.println("in executeBulk(" + bulkItems + ")");
         Mutator<String> mutator = HFactory.createMutator(keyspace, StringSerializer.get());
         for (BulkItem bulkItem : bulkItems) {
             IGSEntry item = (IGSEntry) bulkItem.getItem();
@@ -98,14 +96,23 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
     }
 
     private void write(Mutator<String> mutator, String uid, IGSEntry item) {
-        int fldCount = item.getFieldsNames().length;
-        String key = getKeyValue(item);
-        for (int i = 0; i < fldCount; i++) {
-            mutator.addInsertion(key, columnFamily,
-                    HFactory.createColumn(item.getFieldsNames()[i],
-                            item.getFieldsValues()[i],
-                            StringSerializer.get(),
-                            SerializerTypeInferer.getSerializer(item.getFieldValue(i))));
+        try {
+            int fldCount = item.getFieldsNames().length;
+            String key = getKeyValue(item);
+            for (int i = 0; i < fldCount; i++) {
+                System.out.printf("insertion key:%s columnFamily %s, name %s value %s%n", key,
+                        columnFamily, item.getFieldsNames()[i],
+                        item.getFieldsValues()[i].toString());
+                if (item.getFieldsValues()[i] != null) {
+                    mutator.addInsertion(key, columnFamily,
+                            HFactory.createColumn(item.getFieldsNames()[i],
+                                    item.getFieldsValues()[i].toString(),
+                                    StringSerializer.get(),
+                                    StringSerializer.get()));
+                }
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
     }
 
@@ -118,14 +125,15 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
         if (matcher.matches()) {
             return matcher.group(1).replaceAll("_", ".");
         }
-        throw new RuntimeException("Type Not Found in Cassandra row, "+id);
+        throw new RuntimeException("Type Not Found in Cassandra row, " + id);
     }
+
     String getIdFromKey(String id) {
         Matcher matcher = keyPattern.matcher(id);
         if (matcher.matches()) {
             return matcher.group(2);
         }
-        throw new RuntimeException("Type Not Found in Cassandra row, "+id);
+        throw new RuntimeException("Type Not Found in Cassandra row, " + id);
     }
 
     String getKeyValue(IGSEntry item) {
@@ -143,6 +151,7 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
 
     @Override
     public void destroy() throws Exception {
+        //cluster.getConnectionManager().shutdown();
     }
 
     @Override
@@ -186,6 +195,7 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
                 QueryResult<OrderedRows<String, String, String>> result = rangeSlicesQuery.execute();
                 orderedRows = result.get();
                 iter = orderedRows.iterator();
+                System.out.println("data iterator static init run");
             }
 
             @Override
@@ -200,17 +210,19 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
             @Override
             public Object next() {
                 Row<String, String, String> row = (Row<String, String, String>) iter.next();
-
+                System.out.println("row: " + row);
+                Object o = null;
                 String id = row.getKey();
                 String type = getTypeFromKey(id);
-                String uid=getIdFromKey(id);
+                String uid = getIdFromKey(id);
                 List<HColumn<String, String>> hColumns = row.getColumnSlice().getColumns();
                 try {
-                    Object o=Class.forName(type).newInstance();
-                    Map context=new HashMap();
+                    o = Class.forName(type).newInstance();
+                    Map context = new HashMap();
                     context.put("o", o);
-                    for(HColumn<String, String> hColumn:hColumns) {
-                        MVEL.eval("o."+hColumn.getName()+"=\""+hColumn.getValue()+"\"", context);
+                    for (HColumn<String, String> hColumn : hColumns) {
+                        MVEL.eval("o." + hColumn.getName() + "=\"" + hColumn.getValue() + "\"", context);
+                        System.out.println(o);
                     }
                 } catch (InstantiationException e) {
                     e.printStackTrace();
@@ -219,7 +231,8 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 }
-                return null;
+                System.out.println("returning " + o);
+                return o;
             }
 
             @Override
@@ -227,12 +240,13 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
                 //To change body of implemented methods use File | Settings | File Templates.
             }
         };
-        return null;
+        System.out.println("built data iterator");
+        return iterator;
     }
 
 
     @Override
     public void shutdown() throws DataSourceException {
-        cluster.getConnectionManager().shutdown();
+
     }
 }
