@@ -73,9 +73,6 @@ public class ScaleDataGrid {
                     .memoryCapacityPerContainer(allocationChunk, MemoryUnit.MEGABYTES)
                     .maxMemoryCapacity(memoryCapacity * 4, MemoryUnit.MEGABYTES)
                             //		         .maxNumberOfCpuCores(maxNumberOfCpuCores)
-                    .addContextProperty("cluster-config.groups.group.fail-over-policy.active-election.yield-time", "300")
-                    .addContextProperty("cluster-config.groups.group.fail-over-policy.active-election.fault-detector.invocation-delay", "300")
-                    .addContextProperty("cluster-config.groups.group.fail-over-policy.active-election.fault-detector.retry-count", "2")
                     .addContextProperty("space-config.proxy-settings.connection-retries", "5")
                             //initial scale
                     .scale(new ManualCapacityScaleConfigurer().
