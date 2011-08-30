@@ -92,6 +92,7 @@ public class StatefulPUPanel extends JPanel {
 		gbc_txtPUName.gridy = 0;
 		add(txtPUName, gbc_txtPUName);
 		txtPUName.setColumns(10);
+		txtPUName.setEditable(false);
 
 		txtPrimaries = new JTextField();
 		GridBagConstraints gbc_txtPrimaries = new GridBagConstraints();
@@ -101,6 +102,7 @@ public class StatefulPUPanel extends JPanel {
 		gbc_txtPrimaries.gridy = 0;
 		add(txtPrimaries, gbc_txtPrimaries);
 		txtPrimaries.setColumns(10);
+		txtPrimaries.setEditable(false);
 
 		txtBackups = new JTextField();
 		GridBagConstraints gbc_txtBackups = new GridBagConstraints();
@@ -110,6 +112,7 @@ public class StatefulPUPanel extends JPanel {
 		gbc_txtBackups.gridy = 0;
 		add(txtBackups, gbc_txtBackups);
 		txtBackups.setColumns(10);
+		txtBackups.setEditable(false);
 
 		txtTotal = new JTextField();
 		GridBagConstraints gbc_textField = new GridBagConstraints();
@@ -119,6 +122,7 @@ public class StatefulPUPanel extends JPanel {
 		gbc_textField.gridy = 0;
 		add(txtTotal, gbc_textField);
 		txtTotal.setColumns(10);
+		txtTotal.setEditable(false);
 
 		btnDeploy = new JButton("Deploy") {
 			/**
