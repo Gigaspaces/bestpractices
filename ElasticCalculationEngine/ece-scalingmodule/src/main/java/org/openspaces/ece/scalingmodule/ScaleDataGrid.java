@@ -24,7 +24,7 @@ public class ScaleDataGrid {
     @Parameter(names = {"-l", "--locator"})
     String locator = "127.0.0.1";
     @Parameter(names = {"-g", "--group"})
-    String group = "Gigaspaces-XAPPremium-8.0.3-rc";
+    String group = "Gigaspaces-XAPPremium-8.0.3-ga";
     @Parameter(names = {"-n", "--name"})
     String processingUnitName = "ece-datagrid";
     @Parameter(names = {"-m"})
