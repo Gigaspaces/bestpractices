@@ -23,6 +23,11 @@
             <version>1.0</version>
         </dependency>
           <dependency>
+            <groupId>org.openspaces.bestpractices.mirror-parent</groupId>
+            <artifactId>common</artifactId>
+            <version>1.0</version>
+        </dependency>
+          <dependency>
             <groupId>org.apache.cassandra</groupId>
             <artifactId>cassandra-all</artifactId>
             <version>${cassandraVersion}</version>

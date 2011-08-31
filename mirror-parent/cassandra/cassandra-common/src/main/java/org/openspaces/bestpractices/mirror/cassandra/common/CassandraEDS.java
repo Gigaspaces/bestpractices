@@ -17,15 +17,11 @@ import me.prettyprint.hector.api.mutation.Mutator;
 import me.prettyprint.hector.api.query.QueryResult;
 import me.prettyprint.hector.api.query.RangeSlicesQuery;
 import org.mvel2.MVEL;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
+import org.openspaces.bestpractices.mirror.common.AbstractNoSQLEDS;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class CassandraEDS implements BulkDataPersister, ManagedDataSource, DisposableBean, InitializingBean {
+public class CassandraEDS extends AbstractNoSQLEDS {
     private Cluster cluster;
     private Integer port;
     private String clusterName;
@@ -104,35 +100,6 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
         }
     }
 
-    Map<String, String> keyPrefixes = new ConcurrentHashMap<String, String>();
-
-    Pattern keyPattern = Pattern.compile("(.+):(.+)");
-
-    String getTypeFromKey(String id) {
-        Matcher matcher = keyPattern.matcher(id);
-        if (matcher.matches()) {
-            return matcher.group(1).replaceAll("_", ".");
-        }
-        throw new RuntimeException("Type Not Found in Cassandra row, " + id);
-    }
-
-    String getIdFromKey(String id) {
-        Matcher matcher = keyPattern.matcher(id);
-        if (matcher.matches()) {
-            return matcher.group(2);
-        }
-        throw new RuntimeException("Type Not Found in Cassandra row, " + id);
-    }
-
-    String getKeyValue(IGSEntry item) {
-        String prefix = keyPrefixes.get(item.getClassName());
-        if (prefix == null) {
-            prefix = item.getClassName().replaceAll("\\.", "_") + ":";
-            keyPrefixes.put(item.getClassName(), prefix);
-        }
-        return prefix + item.getUID();
-    }
-
     private void remove(Mutator<String> mutator, IGSEntry item) {
         mutator.addDeletion(getKeyValue(item), columnFamily);
     }
@@ -159,10 +126,6 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
                 1,
                 Arrays.asList(cfDef));
         cluster.addKeyspace(ksDef);
-    }
-
-    @Override
-    public void init(Properties properties) throws DataSourceException {
     }
 
     @Override
@@ -206,7 +169,7 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
                 List<HColumn<String, String>> hColumns = row.getColumnSlice().getColumns();
                 try {
                     o = Class.forName(type).newInstance();
-                    Map context = new HashMap();
+                    Map<String, Object> context = new HashMap<String, Object>();
                     context.put("o", o);
                     for (HColumn<String, String> hColumn : hColumns) {
                         String expression = "o." + hColumn.getName() + "=\"" + hColumn.getValue() + "\"";
