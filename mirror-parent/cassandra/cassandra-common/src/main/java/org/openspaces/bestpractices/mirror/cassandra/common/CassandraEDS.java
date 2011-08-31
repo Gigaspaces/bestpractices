@@ -27,7 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class CassandraEDS implements BulkDataPersister, ManagedDataSource, DisposableBean, InitializingBean {
-    Cluster cluster;
+    private Cluster cluster;
     private Integer port;
     private String clusterName;
     private String host;
@@ -78,10 +78,10 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
 
     @Override
     public void executeBulk(List<BulkItem> bulkItems) throws DataSourceException {
-        System.out.println(bulkItems);
+        //System.out.println(bulkItems);
         Mutator<String> mutator = HFactory.createMutator(keyspace, StringSerializer.get());
         for (BulkItem bulkItem : bulkItems) {
-            System.out.println(bulkItem.getItem().getClass());
+            //System.out.println(bulkItem.getItem().getClass());
             switch (bulkItem.getOperation()) {
                 case BulkItem.REMOVE:
                     remove(mutator, (IGSEntry) bulkItem.getItem());
@@ -102,8 +102,8 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
         String uid = getKeyValue((IGSEntry) item.getItem());
         for (String key : item.getItemValues().keySet()) {
             if (item.getItemValues().get(key) != null) {
-                System.out.printf("Adding to %s, %s: %s=%s%n", uid, getColumnFamily(), key,
-                        item.getItemValues().get(key));
+                //System.out.printf("Adding to %s, %s: %s=%s%n", uid, getColumnFamily(), key,
+                //        item.getItemValues().get(key));
 
                 mutator.addInsertion(uid, getColumnFamily(),
                         HFactory.createColumn(key, item.getItemValues().get(key).toString(), StringSerializer.get(),
@@ -220,7 +220,7 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
                     for (HColumn<String, String> hColumn : hColumns) {
                         String expression="o." + hColumn.getName() + "=\"" + hColumn.getValue() + "\"";
                         MVEL.eval(expression, context);
-                        System.out.println(o);
+                        //System.out.println(o);
                     }
                     MVEL.eval("o.id=\"" + uid + "\"",context);
                 } catch (InstantiationException e) {
@@ -246,7 +246,7 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
             @Override
             public Object next() {
                 Object o = iterator.next();
-                System.out.println("loading " + o);
+                //System.out.println("loading " + o);
                 return o;
             }
 
@@ -255,7 +255,7 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
                 iterator.remove();
             }
         };
-        System.out.println("built data iterator");
+        //System.out.println("built data iterator");
         return iterator;
     }
 
