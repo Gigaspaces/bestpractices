@@ -1,14 +1,12 @@
 package org.openspaces.bestpractices.mirror.model;
 
-import com.gigaspaces.annotation.pojo.SpaceClass;
-import com.gigaspaces.annotation.pojo.SpaceId;
-import com.gigaspaces.annotation.pojo.SpaceIndex;
-import com.gigaspaces.annotation.pojo.SpaceProperty;
+import com.gigaspaces.annotation.pojo.*;
 import com.gigaspaces.metadata.index.SpaceIndexType;
 
+import java.io.Serializable;
+
 @SpaceClass
-public class Person {
-    String id;
+public class Person extends BaseEntry {
     String firstName;
     String lastName;
     Integer creditScore;
@@ -22,16 +20,8 @@ public class Person {
         this.firstName = firstName;
     }
 
-    @SpaceId(autoGenerate = true)
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
     @SpaceProperty
+    @SpaceRouting
     public String getLastName() {
         return lastName;
     }

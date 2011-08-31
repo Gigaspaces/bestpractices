@@ -9,11 +9,11 @@
     </bean>
 
     <bean id="cassandraEDS" class="org.openspaces.bestpractices.mirror.cassandra.common.CassandraEDS">
-        <property name="clusterName" value="cluster" />
-        <property name="columnFamily" value="columnFamily" />
-        <property name="host" value="localhost" />
-        <property name="keyspaceName" value="localKeySpace" />
-        <property name="port" value="19160" />
+        <property name="clusterName" value="cluster"/>
+        <property name="columnFamily" value="columnFamily"/>
+        <property name="host" value="localhost"/>
+        <property name="keyspaceName" value="localKeySpace"/>
+        <property name="port" value="19160"/>
     </bean>
 
     <!-- END cassandra config -->
@@ -23,7 +23,7 @@
         connects to this mirror space into the database using Hibernate.
     -->
     <os-core:mirror id="mirror" url="/./mirror-service" external-data-source="cassandraEDS">
-        <os-core:source-space name="space" partitions="2" backups="1"/>
+        <os-core:source-space name="space" partitions="1" backups="1"/>
         <os-core:properties>
             <props>
                 <prop key="space-config.external-data-source.data-class">com.j_spaces.core.IGSEntry</prop>

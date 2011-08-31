@@ -25,6 +25,7 @@
         <os-core:properties>
             <props>
                 <prop key="space-config.external-data-source.data-class">com.j_spaces.core.IGSEntry</prop>
+                <prop key="space-config.external-data-source.usage">read-only</prop>
             </props>
         </os-core:properties>
     </os-core:space>

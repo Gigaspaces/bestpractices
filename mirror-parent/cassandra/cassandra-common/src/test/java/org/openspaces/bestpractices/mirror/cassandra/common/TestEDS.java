@@ -8,31 +8,16 @@ import org.openspaces.core.space.UrlSpaceConfigurer;
 import org.openspaces.pu.container.ProcessingUnitContainer;
 import org.openspaces.pu.container.integrated.IntegratedProcessingUnitContainerProvider;
 import org.springframework.core.io.ClassPathResource;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
-import java.io.IOException;
+import static org.testng.Assert.assertNotNull;
 
-public class TestEDS {
-    CassandraTestUtil cassandraUtil = new CassandraTestUtil();
-    FileUtil fileUtil = new FileUtil();
+public class TestEDS extends TestCassandra {
     private ProcessingUnitContainer space;
     ProcessingUnitContainer mirror;
     private GigaSpace gigaspace;
-
-    @BeforeTest
-    public void startup() throws IOException {
-        final String ref[] = new String[1];
-        FileCallback fileCallback = new FileCallback() {
-            @Override
-            public void found(String filename) {
-                ref[0] = filename;
-            }
-        };
-        fileUtil.findFile("cassandra\\.yaml", fileCallback);
-        System.out.println(ref[0]);
-        ref[0] = ref[0].substring(!ref[0].contains(":") ? 0 : ref[0].indexOf(":") + 1);
-        cassandraUtil.startCassandra("file:" + ref[0]);
-    }
 
     public ProcessingUnitContainer startMirror() {
         IntegratedProcessingUnitContainerProvider provider = new IntegratedProcessingUnitContainerProvider();
@@ -68,15 +53,13 @@ public class TestEDS {
         System.out.println("----------------------------------\nStopped containers");
     }
 
-    @AfterTest
-    public void shutdown() {
-        cassandraUtil.shutDownCassandra();
-    }
-
     @Test
     public void testEDSMirror() {
-       Person person=new Person();
-        person.setId("asdlkkjhaskjhd");
+        Person p = new Person();
+        Person person = gigaspace.take(p);
+        System.out.println(person + " (should be null)");
+
+        person = new Person();
         person.setFirstName("John");
         person.setLastName("Public");
         person.setCreditScore(600);
@@ -90,6 +73,9 @@ public class TestEDS {
 
     @Test(dependsOnMethods = {"testEDSMirror"})
     public void testInitialLoad() {
-
+        Person p = new Person();
+        Person person = gigaspace.take(p);
+        System.out.println(person+" (should not be null)");
+        assertNotNull(person);
     }
 }

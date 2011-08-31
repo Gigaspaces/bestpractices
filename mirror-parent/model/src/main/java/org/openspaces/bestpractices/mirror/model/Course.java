@@ -3,19 +3,9 @@ package org.openspaces.bestpractices.mirror.model;
 import com.gigaspaces.annotation.pojo.SpaceId;
 import com.gigaspaces.annotation.pojo.SpaceProperty;
 
-public class Course {
-    String id;
+public class Course extends BaseEntry {
     String name;
     Integer level;
-
-    @SpaceId(autoGenerate = true)
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     @SpaceProperty
     public Integer getLevel() {

@@ -20,6 +20,7 @@ import org.mvel2.MVEL;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
@@ -77,42 +78,37 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
 
     @Override
     public void executeBulk(List<BulkItem> bulkItems) throws DataSourceException {
-        System.out.println("in executeBulk(" + bulkItems + ")");
+        System.out.println(bulkItems);
         Mutator<String> mutator = HFactory.createMutator(keyspace, StringSerializer.get());
         for (BulkItem bulkItem : bulkItems) {
-            IGSEntry item = (IGSEntry) bulkItem.getItem();
+            System.out.println(bulkItem.getItem().getClass());
             switch (bulkItem.getOperation()) {
                 case BulkItem.REMOVE:
-                    remove(mutator, item);
+                    remove(mutator, (IGSEntry) bulkItem.getItem());
                     break;
                 case BulkItem.WRITE:
                 case BulkItem.PARTIAL_UPDATE:
                 case BulkItem.UPDATE:
-                    write(mutator, item.getUID(), item);
+                    write(mutator, bulkItem);
                     break;
             }
         }
         mutator.execute();
     }
 
-    private void write(Mutator<String> mutator, String uid, IGSEntry item) {
-        try {
-            int fldCount = item.getFieldsNames().length;
-            String key = getKeyValue(item);
-            for (int i = 0; i < fldCount; i++) {
-                System.out.printf("insertion key:%s columnFamily %s, name %s value %s%n", key,
-                        columnFamily, item.getFieldsNames()[i],
-                        item.getFieldsValues()[i].toString());
-                if (item.getFieldsValues()[i] != null) {
-                    mutator.addInsertion(key, columnFamily,
-                            HFactory.createColumn(item.getFieldsNames()[i],
-                                    item.getFieldsValues()[i].toString(),
-                                    StringSerializer.get(),
-                                    StringSerializer.get()));
-                }
+    Map<Class<?>, Field[]> classFields = new ConcurrentHashMap<Class<?>, Field[]>();
+
+    private void write(Mutator<String> mutator, BulkItem item) {
+        String uid = getKeyValue((IGSEntry) item.getItem());
+        for (String key : item.getItemValues().keySet()) {
+            if (item.getItemValues().get(key) != null) {
+                System.out.printf("Adding to %s, %s: %s=%s%n", uid, getColumnFamily(), key,
+                        item.getItemValues().get(key));
+
+                mutator.addInsertion(uid, getColumnFamily(),
+                        HFactory.createColumn(key, item.getItemValues().get(key).toString(), StringSerializer.get(),
+                                StringSerializer.get()));
             }
-        } catch (Throwable t) {
-            t.printStackTrace();
         }
     }
 
@@ -181,36 +177,37 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
     @Override
     public DataIterator initialLoad() throws DataSourceException {
         DataIterator iterator = new DataIterator() {
-            RangeSlicesQuery<String, String, String> rangeSlicesQuery;
-            OrderedRows<String, String, String> orderedRows;
-            Iterator iter;
+            Set<Object> data = new HashSet<Object>();
+            Iterator<Object> iterator;
 
             {
-                rangeSlicesQuery =
-                        HFactory.createRangeSlicesQuery(keyspace, StringSerializer.get(),
-                                StringSerializer.get(), StringSerializer.get());
-                rangeSlicesQuery.setColumnFamily(columnFamily);
+                RangeSlicesQuery<String, String, String> rangeSlicesQuery =
+                        HFactory.createRangeSlicesQuery(getKeyspace(),
+                                StringSerializer.get(), StringSerializer.get(),
+                                StringSerializer.get());
+                rangeSlicesQuery.setColumnFamily(getColumnFamily());
                 rangeSlicesQuery.setKeys("", "");
-                rangeSlicesQuery.setRange("", "", false, 3);
+                rangeSlicesQuery.setRange("", "", false, 40);
+                rangeSlicesQuery.setRowCount(11);
                 QueryResult<OrderedRows<String, String, String>> result = rangeSlicesQuery.execute();
-                orderedRows = result.get();
-                iter = orderedRows.iterator();
-                System.out.println("data iterator static init run");
+                OrderedRows<String, String, String> orderedRows = result.get();
+
+                Row<String, String, String> lastRow;
+                do {
+                    if (orderedRows.getCount() > 0) {
+                        lastRow = orderedRows.peekLast();
+                        rangeSlicesQuery.setKeys(lastRow.getKey(), "");
+                        orderedRows = rangeSlicesQuery.execute().get();
+
+                        for (Row<String, String, String> row : orderedRows) {
+                            data.add(buildObjectFromRow(row));
+                        }
+                    }
+                } while (orderedRows.getCount() > 1);
+                iterator = data.iterator();
             }
 
-            @Override
-            public void close() {
-            }
-
-            @Override
-            public boolean hasNext() {
-                return iter.hasNext();
-            }
-
-            @Override
-            public Object next() {
-                Row<String, String, String> row = (Row<String, String, String>) iter.next();
-                System.out.println("row: " + row);
+            private Object buildObjectFromRow(Row<String, String, String> row) {
                 Object o = null;
                 String id = row.getKey();
                 String type = getTypeFromKey(id);
@@ -221,9 +218,11 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
                     Map context = new HashMap();
                     context.put("o", o);
                     for (HColumn<String, String> hColumn : hColumns) {
-                        MVEL.eval("o." + hColumn.getName() + "=\"" + hColumn.getValue() + "\"", context);
+                        String expression="o." + hColumn.getName() + "=\"" + hColumn.getValue() + "\"";
+                        MVEL.eval(expression, context);
                         System.out.println(o);
                     }
+                    MVEL.eval("o.id=\"" + uid + "\"",context);
                 } catch (InstantiationException e) {
                     e.printStackTrace();
                 } catch (IllegalAccessException e) {
@@ -231,13 +230,29 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 }
-                System.out.println("returning " + o);
+                return o;
+            }
+
+
+            @Override
+            public void close() {
+            }
+
+            @Override
+            public boolean hasNext() {
+                return iterator.hasNext();
+            }
+
+            @Override
+            public Object next() {
+                Object o = iterator.next();
+                System.out.println("loading " + o);
                 return o;
             }
 
             @Override
             public void remove() {
-                //To change body of implemented methods use File | Settings | File Templates.
+                iterator.remove();
             }
         };
         System.out.println("built data iterator");
@@ -247,6 +262,9 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
 
     @Override
     public void shutdown() throws DataSourceException {
+    }
 
+    public Keyspace getKeyspace() {
+        return keyspace;
     }
 }
