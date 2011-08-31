@@ -11,5 +11,16 @@
 
     <artifactId>mongodb-common</artifactId>
 
-
+    <dependencies>
+         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+            <version>${springVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-mongodb</artifactId>
+            <version>1.0.0.M3</version>
+        </dependency>
+    </dependencies>
 </project>
