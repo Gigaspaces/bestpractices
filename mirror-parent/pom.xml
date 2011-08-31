@@ -10,6 +10,7 @@
     <modules>
         <module>model</module>
         <module>cassandra</module>
+        <module>mongodb</module>
     </modules>
 
     <packaging>pom</packaging>
