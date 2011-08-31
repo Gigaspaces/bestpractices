@@ -20,7 +20,6 @@ import org.mvel2.MVEL;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
@@ -78,10 +77,8 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
 
     @Override
     public void executeBulk(List<BulkItem> bulkItems) throws DataSourceException {
-        //System.out.println(bulkItems);
         Mutator<String> mutator = HFactory.createMutator(keyspace, StringSerializer.get());
         for (BulkItem bulkItem : bulkItems) {
-            //System.out.println(bulkItem.getItem().getClass());
             switch (bulkItem.getOperation()) {
                 case BulkItem.REMOVE:
                     remove(mutator, (IGSEntry) bulkItem.getItem());
@@ -96,15 +93,10 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
         mutator.execute();
     }
 
-    Map<Class<?>, Field[]> classFields = new ConcurrentHashMap<Class<?>, Field[]>();
-
     private void write(Mutator<String> mutator, BulkItem item) {
         String uid = getKeyValue((IGSEntry) item.getItem());
         for (String key : item.getItemValues().keySet()) {
             if (item.getItemValues().get(key) != null) {
-                //System.out.printf("Adding to %s, %s: %s=%s%n", uid, getColumnFamily(), key,
-                //        item.getItemValues().get(key));
-
                 mutator.addInsertion(uid, getColumnFamily(),
                         HFactory.createColumn(key, item.getItemValues().get(key).toString(), StringSerializer.get(),
                                 StringSerializer.get()));
@@ -147,7 +139,6 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
 
     @Override
     public void destroy() throws Exception {
-        //cluster.getConnectionManager().shutdown();
     }
 
     @Override
@@ -176,7 +167,7 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
 
     @Override
     public DataIterator initialLoad() throws DataSourceException {
-        DataIterator iterator = new DataIterator() {
+        return new DataIterator() {
             Set<Object> data = new HashSet<Object>();
             Iterator<Object> iterator;
 
@@ -218,11 +209,10 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
                     Map context = new HashMap();
                     context.put("o", o);
                     for (HColumn<String, String> hColumn : hColumns) {
-                        String expression="o." + hColumn.getName() + "=\"" + hColumn.getValue() + "\"";
+                        String expression = "o." + hColumn.getName() + "=\"" + hColumn.getValue() + "\"";
                         MVEL.eval(expression, context);
-                        //System.out.println(o);
                     }
-                    MVEL.eval("o.id=\"" + uid + "\"",context);
+                    MVEL.eval("o.id=\"" + uid + "\"", context);
                 } catch (InstantiationException e) {
                     e.printStackTrace();
                 } catch (IllegalAccessException e) {
@@ -245,9 +235,7 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
 
             @Override
             public Object next() {
-                Object o = iterator.next();
-                //System.out.println("loading " + o);
-                return o;
+                return iterator.next();
             }
 
             @Override
@@ -255,8 +243,6 @@ public class CassandraEDS implements BulkDataPersister, ManagedDataSource, Dispo
                 iterator.remove();
             }
         };
-        //System.out.println("built data iterator");
-        return iterator;
     }
 
 
