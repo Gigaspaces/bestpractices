@@ -6,6 +6,7 @@ import com.j_spaces.core.ITypeDescriptor;
 import com.j_spaces.core.client.ExternalEntry;
 import net.jini.core.entry.UnusableEntryException;
 import org.mvel2.MVEL;
+import org.openspaces.bestpractices.mirror.common.InvalidKeyFormatException;
 import org.openspaces.bestpractices.mirror.model.Person;
 import org.testng.annotations.Test;
 
@@ -16,7 +17,7 @@ import static org.testng.Assert.assertEquals;
 
 public class TestEDSMethods {
     @Test
-    public void testKeyTypes() {
+    public void testKeyTypes() throws InvalidKeyFormatException {
         CassandraEDS eds = new CassandraEDS();
         IGSEntry entry = new IGSEntry() {
             @Override

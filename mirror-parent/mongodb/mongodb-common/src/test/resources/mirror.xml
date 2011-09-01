@@ -20,7 +20,7 @@
                        auto-connect-retry="0"/>
     </mongo:mongo>
 
-    <bean id="mongoEDS" class="org.openspaces.bestpractices.mirror.mongodb.common.MongoDataSource">
+    <bean id="mongoEDS" class="org.openspaces.bestpractices.mirror.mongodb.common.MongoEDS">
         <property name="databaseName" value="test"/>
         <property name="mongo" ref="mongo"/>
     </bean>

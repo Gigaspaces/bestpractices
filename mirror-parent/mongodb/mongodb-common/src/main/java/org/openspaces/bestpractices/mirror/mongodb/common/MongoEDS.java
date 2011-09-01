@@ -8,11 +8,9 @@ import com.j_spaces.core.IGSEntry;
 import com.mongodb.*;
 import org.mvel2.MVEL;
 import org.openspaces.bestpractices.mirror.common.AbstractNoSQLEDS;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.openspaces.bestpractices.mirror.common.InvalidKeyFormatException;
 import org.springframework.data.document.mongodb.MongoOperations;
 import org.springframework.data.document.mongodb.MongoTemplate;
-import org.springframework.data.document.mongodb.query.BasicQuery;
 import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
@@ -20,9 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-public class MongoDataSource extends AbstractNoSQLEDS {
-    private static Logger log = LoggerFactory.getLogger(MongoDataSource.class);
-
+public class MongoEDS extends AbstractNoSQLEDS {
     Mongo mongo;
     String databaseName;
     MongoOperations mongoOperations;
@@ -41,7 +37,8 @@ public class MongoDataSource extends AbstractNoSQLEDS {
         mongoOperations = new MongoTemplate(mongo, databaseName);
     }
 
-    private boolean isConnected() {
+    @Override
+    protected boolean isConnected() {
         if (mongo == null)
             return false;
         List<String> dbs;
@@ -61,38 +58,7 @@ public class MongoDataSource extends AbstractNoSQLEDS {
     public void shutdown() throws DataSourceException {
     }
 
-
-    public void executeBulk(List<BulkItem> bulk) throws DataSourceException {
-        if (!isConnected()) {
-            //throw new DataSourceException("Mongo Database not connected, failed to perform DB operation");
-            log.error("Mongo Database not connected, failed to perform DB operation");
-            return;
-        }
-        for (BulkItem bulkItem : bulk) {
-            IGSEntry object = (IGSEntry) bulkItem.getItem();
-
-            switch (bulkItem.getOperation()) {
-                case BulkItem.WRITE:
-                    System.out.println("BulkItem.WRITE called for " + object);
-                    executeWrite(bulkItem);
-                    break;
-                case BulkItem.UPDATE:
-                case BulkItem.PARTIAL_UPDATE:
-                    System.out.println("BulkItem.UPDATE called for " + object);
-                    executeUpdate(bulkItem);
-                    break;
-                case BulkItem.REMOVE:
-                    System.out.println("BulkItem.REMOVE called for " + object);
-                    removeDocument(bulkItem);
-                    break;
-                default:
-                    System.out.println("unknown operation type "+bulkItem);
-                    break;
-            }
-        }
-    }
-
-    private void executeWrite(BulkItem item) {
+    protected void write(Map<String, Object> context, BulkItem item) {
         if (log.isDebugEnabled()) {
             log.debug("MongoEDS.executeBulk.write " + item);
         }
@@ -119,7 +85,7 @@ public class MongoDataSource extends AbstractNoSQLEDS {
         }
     }
 
-    private void executeUpdate(BulkItem item) {
+    protected void update(Map<String, Object> context, BulkItem item) {
         if (log.isDebugEnabled()) {
             log.debug("MongoEDS.executeBulk.update " + item);
         }
@@ -139,17 +105,11 @@ public class MongoDataSource extends AbstractNoSQLEDS {
         }
     }
 
-    private void removeDocument(BulkItem item) {
-        //if (log.isDebugEnabled()) {
-        System.out.println("MongoEDS.executeBulk.remove " + item);
-        //}
+    protected void remove(Map<String, Object> context, BulkItem item) {
         BasicDBObject queryObject = new BasicDBObject();
         queryObject.put("_id", item.getIdPropertyValue());
-        System.out.println(queryObject);
         WriteResult s = collection.remove(queryObject);
-        //if (log.isDebugEnabled()) {
-        System.out.println("RemoveResult: " + s);
-        //}
+
     }
 
     public DataIterator initialLoad() throws DataSourceException {
@@ -173,26 +133,29 @@ public class MongoDataSource extends AbstractNoSQLEDS {
             public Object next() {
                 DBObject dbObject = cursor.next();
                 Object o = null;
-                String uid = (String) dbObject.get("_id");
-                String type = getTypeFromKey(uid);
-                String id = getIdFromKey(uid);
                 try {
-                    o = Class.forName(type).newInstance();
-                    Map<String, Object> context = new HashMap<String, Object>();
-                    context.put("o", o);
-                    for (String key : dbObject.keySet()) {
-                        if (!key.startsWith("_")) {
-                            String expression = "o." + key + "=\"" + dbObject.get(key) + "\"";
-                            MVEL.eval(expression, context);
+                    String uid = (String) dbObject.get("_id");
+                    String type = getTypeFromKey(uid);
+                    String id = getIdFromKey(uid);
+                    try {
+                        o = Class.forName(type).newInstance();
+                        Map<String, Object> context = new HashMap<String, Object>();
+                        context.put("o", o);
+                        for (String key : dbObject.keySet()) {
+                            if (!key.startsWith("_")) {
+                                String expression = "o." + key + "=\"" + dbObject.get(key) + "\"";
+                                MVEL.eval(expression, context);
+                            }
                         }
+                        MVEL.eval("o.id=\"" + uid + "\"", context);
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (InstantiationException e) {
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
                     }
-                    MVEL.eval("o.id=\"" + uid + "\"", context);
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                } catch (InstantiationException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+                } catch (InvalidKeyFormatException e) {
                 }
                 return o;
             }

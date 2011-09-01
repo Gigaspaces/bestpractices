@@ -1,6 +1,8 @@
 package org.openspaces.bestpractices.mirror.cassandra.common;
 
-import com.gigaspaces.datasource.*;
+import com.gigaspaces.datasource.BulkItem;
+import com.gigaspaces.datasource.DataIterator;
+import com.gigaspaces.datasource.DataSourceException;
 import com.j_spaces.core.IGSEntry;
 import me.prettyprint.cassandra.serializers.StringSerializer;
 import me.prettyprint.cassandra.service.ThriftKsDef;
@@ -18,16 +20,24 @@ import me.prettyprint.hector.api.query.QueryResult;
 import me.prettyprint.hector.api.query.RangeSlicesQuery;
 import org.mvel2.MVEL;
 import org.openspaces.bestpractices.mirror.common.AbstractNoSQLEDS;
+import org.openspaces.bestpractices.mirror.common.InvalidKeyFormatException;
 
 import java.util.*;
 
 public class CassandraEDS extends AbstractNoSQLEDS {
+    @SuppressWarnings({"FieldCanBeLocal"})
     private Cluster cluster;
     private Integer port;
     private String clusterName;
     private String host;
     private String keyspaceName;
     private Keyspace keyspace;
+    private final static StringSerializer stringSerializer = StringSerializer.get();
+
+    @Override
+    protected boolean isConnected() {
+        return cluster!=null;
+    }
 
     public String getColumnFamily() {
         return columnFamily;
@@ -37,6 +47,7 @@ public class CassandraEDS extends AbstractNoSQLEDS {
         this.columnFamily = columnFamily;
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public String getKeyspaceName() {
         return keyspaceName;
     }
@@ -47,6 +58,7 @@ public class CassandraEDS extends AbstractNoSQLEDS {
 
     private String columnFamily;
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public String getClusterName() {
         return clusterName;
     }
@@ -55,6 +67,7 @@ public class CassandraEDS extends AbstractNoSQLEDS {
         this.clusterName = clusterName;
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public String getHost() {
         return host;
     }
@@ -63,6 +76,7 @@ public class CassandraEDS extends AbstractNoSQLEDS {
         this.host = host;
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public Integer getPort() {
         return port;
     }
@@ -72,36 +86,44 @@ public class CassandraEDS extends AbstractNoSQLEDS {
     }
 
     @Override
-    public void executeBulk(List<BulkItem> bulkItems) throws DataSourceException {
-        Mutator<String> mutator = HFactory.createMutator(keyspace, StringSerializer.get());
-        for (BulkItem bulkItem : bulkItems) {
-            switch (bulkItem.getOperation()) {
-                case BulkItem.REMOVE:
-                    remove(mutator, (IGSEntry) bulkItem.getItem());
-                    break;
-                case BulkItem.WRITE:
-                case BulkItem.PARTIAL_UPDATE:
-                case BulkItem.UPDATE:
-                    write(mutator, bulkItem);
-                    break;
-            }
-        }
+    protected void preExecute(Map<String, Object> context) {
+        context.put("mutator", HFactory.createMutator(getKeyspace(), stringSerializer));
+    }
+
+    @Override
+    protected void postExecute(Map<String, Object> context) {
+        Mutator<String> mutator = getMutatorFromContext(context);
         mutator.execute();
     }
 
-    private void write(Mutator<String> mutator, BulkItem item) {
+    @Override
+    protected void update(Map<String, Object> context, BulkItem bulkItem) {
+        write(context, bulkItem);
+    }
+
+    @Override
+    protected void write(Map<String, Object> context, BulkItem item) {
+        Mutator<String> mutator = getMutatorFromContext(context);
         String uid = getKeyValue((IGSEntry) item.getItem());
         for (String key : item.getItemValues().keySet()) {
             if (item.getItemValues().get(key) != null) {
                 mutator.addInsertion(uid, getColumnFamily(),
-                        HFactory.createColumn(key, item.getItemValues().get(key).toString(), StringSerializer.get(),
-                                StringSerializer.get()));
+                        HFactory.createColumn(key, item.getItemValues().get(key).toString(), stringSerializer,
+                                stringSerializer));
             }
         }
     }
 
-    private void remove(Mutator<String> mutator, IGSEntry item) {
-        mutator.addDeletion(getKeyValue(item), columnFamily);
+    @Override
+    protected void remove(Map<String, Object> context, BulkItem item) {
+        IGSEntry entry= (IGSEntry) item.getItem();
+        Mutator<String> mutator= getMutatorFromContext(context);
+        mutator.addDeletion(getKeyValue(entry), columnFamily);
+    }
+
+    private Mutator<String> getMutatorFromContext(Map<String, Object> context) {
+        //noinspection unchecked
+        return (Mutator<String>) context.get("mutator");
     }
 
     @Override
@@ -137,8 +159,8 @@ public class CassandraEDS extends AbstractNoSQLEDS {
             {
                 RangeSlicesQuery<String, String, String> rangeSlicesQuery =
                         HFactory.createRangeSlicesQuery(getKeyspace(),
-                                StringSerializer.get(), StringSerializer.get(),
-                                StringSerializer.get());
+                                stringSerializer, stringSerializer,
+                                stringSerializer);
                 rangeSlicesQuery.setColumnFamily(getColumnFamily());
                 rangeSlicesQuery.setKeys("", "");
                 rangeSlicesQuery.setRange("", "", false, 40);
@@ -154,14 +176,19 @@ public class CassandraEDS extends AbstractNoSQLEDS {
                         orderedRows = rangeSlicesQuery.execute().get();
 
                         for (Row<String, String, String> row : orderedRows) {
-                            data.add(buildObjectFromRow(row));
+                            try {
+                                data.add(buildObjectFromRow(row));
+                            } catch (InvalidKeyFormatException e) {
+                                // bad row, discard
+                                e.printStackTrace();
+                            }
                         }
                     }
                 } while (orderedRows.getCount() > 1);
                 iterator = data.iterator();
             }
 
-            private Object buildObjectFromRow(Row<String, String, String> row) {
+            private Object buildObjectFromRow(Row<String, String, String> row) throws InvalidKeyFormatException {
                 Object o = null;
                 String id = row.getKey();
                 String type = getTypeFromKey(id);
