@@ -1,4 +1,4 @@
-package org.openspaces.bestpractices.mirror.cassandra.common;
+package org.openspaces.bestpractices.mirror.common.tests;
 
 import java.io.File;
 import java.io.FilenameFilter;

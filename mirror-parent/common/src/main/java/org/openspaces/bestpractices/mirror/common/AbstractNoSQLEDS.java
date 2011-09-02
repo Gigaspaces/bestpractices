@@ -2,6 +2,7 @@ package org.openspaces.bestpractices.mirror.common;
 
 import com.gigaspaces.datasource.*;
 import com.j_spaces.core.IGSEntry;
+import com.j_spaces.core.client.SQLQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -16,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public abstract class AbstractNoSQLEDS implements BulkDataPersister, ManagedDataSource, DisposableBean, InitializingBean {
+public abstract class AbstractNoSQLEDS implements BulkDataPersister, ManagedDataSource, DisposableBean, InitializingBean, SQLDataProvider {
     protected final Map<String, String> keyPrefixes = new ConcurrentHashMap<String, String>();
     protected final Pattern keyPattern = Pattern.compile("(.+):(.+)");
     protected Logger log = LoggerFactory.getLogger(this.getClass());
@@ -135,5 +136,11 @@ public abstract class AbstractNoSQLEDS implements BulkDataPersister, ManagedData
     public void init(Properties properties) throws DataSourceException {
         log.debug("init");
         this.properties = properties;
+    }
+
+    @Override
+    public DataIterator iterator(SQLQuery sqlQuery) throws DataSourceException {
+        log.debug("iterator("+sqlQuery+") called");
+        return null;
     }
 }

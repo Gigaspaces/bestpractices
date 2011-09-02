@@ -9,12 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>mongodb</artifactId>
-    <packaging>pom</packaging>
-    <modules>
-        <module>mongodb-common</module>
-    </modules>
-
+    <artifactId>common-test</artifactId>
     <dependencies>
         <dependency>
             <groupId>org.openspaces.bestpractices.mirror-parent</groupId>
@@ -22,15 +17,10 @@
             <version>1.0</version>
         </dependency>
         <dependency>
-            <groupId>org.openspaces.bestpractices.mirror-parent</groupId>
-            <artifactId>common</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openspaces.bestpractices.mirror-parent</groupId>
-            <artifactId>common-test</artifactId>
-            <version>1.0</version>
-            <scope>test</scope>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>${testngVersion}</version>
         </dependency>
     </dependencies>
+
 </project>

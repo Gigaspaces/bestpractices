@@ -6,14 +6,11 @@ import com.gigaspaces.datasource.DataSourceException;
 import com.gigaspaces.document.SpaceDocument;
 import com.j_spaces.core.IGSEntry;
 import com.mongodb.*;
-import org.mvel2.MVEL;
 import org.openspaces.bestpractices.mirror.common.AbstractNoSQLEDS;
 import org.openspaces.bestpractices.mirror.common.InvalidKeyFormatException;
 import org.springframework.data.document.mongodb.MongoOperations;
 import org.springframework.data.document.mongodb.MongoTemplate;
-import org.springframework.util.StringUtils;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -57,9 +54,6 @@ public class MongoEDS extends AbstractNoSQLEDS {
 
     @Override
     public void executeBulk(List<BulkItem> bulkItems) throws DataSourceException {
-        for(BulkItem item:bulkItems) {
-            System.out.println(item.getItem());
-        }
         super.executeBulk(bulkItems);
     }
 
@@ -78,18 +72,9 @@ public class MongoEDS extends AbstractNoSQLEDS {
                 dbObject.put(key, item.getItemValues().get(key));
             }
         }
-        System.out.println(dbObject);
         WriteResult s = collection.insert(dbObject);
         if (log.isDebugEnabled()) {
             log.debug("WriteResult: " + s);
-        }
-    }
-
-    private String extractCollectionName(Object object) {
-        if (object instanceof SpaceDocument) {
-            return ((SpaceDocument) object).getTypeName();
-        } else {
-            return StringUtils.uncapitalize(object.getClass().getSimpleName());
         }
     }
 
@@ -109,7 +94,6 @@ public class MongoEDS extends AbstractNoSQLEDS {
                 }
             }
         }
-        System.out.println(dbObject);
         WriteResult s = collection.update(query, dbObject);
         if (log.isDebugEnabled()) {
             log.debug("UpdateResult: " + s);
@@ -117,10 +101,15 @@ public class MongoEDS extends AbstractNoSQLEDS {
     }
 
     protected void remove(Map<String, Object> context, BulkItem item) {
+        if (log.isDebugEnabled()) {
+            log.debug("MongoEDS.executeBulk.remove " + item);
+        }
         BasicDBObject queryObject = new BasicDBObject();
-        queryObject.put("_id", item.getIdPropertyValue());
+        queryObject.put("_id", getKeyValue((IGSEntry) item.getItem()));
         WriteResult s = collection.remove(queryObject);
-
+        if (log.isDebugEnabled()) {
+            log.debug("Write result: " + s);
+        }
     }
 
     public DataIterator initialLoad() throws DataSourceException {
@@ -143,33 +132,23 @@ public class MongoEDS extends AbstractNoSQLEDS {
             @Override
             public Object next() {
                 DBObject dbObject = cursor.next();
-                log.error(dbObject.toString());
-                Object o = null;
+                SpaceDocument document = null;
                 try {
                     String uid = (String) dbObject.get("_id");
                     String type = getTypeFromKey(uid);
                     String id = getIdFromKey(uid);
-                    try {
-                        o = Class.forName(type).newInstance();
-                        Map<String, Object> context = new HashMap<String, Object>();
-                        context.put("o", o);
-                        for (String key : dbObject.keySet()) {
-                            if (!key.startsWith("_")) {
-                                String expression = "o." + key + "=\"" + dbObject.get(key) + "\"";
-                                MVEL.eval(expression, context);
-                            }
+                    document = new SpaceDocument(type);
+
+                    for (String key : dbObject.keySet()) {
+                        if (!key.startsWith("_")) {
+                            document.setProperty(key, dbObject.get(key));
                         }
-                        MVEL.eval("o.id=\"" + uid + "\"", context);
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (InstantiationException e) {
-                        e.printStackTrace();
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
                     }
-                } catch (InvalidKeyFormatException e) {
+
+                    document.setProperty("id", id);
+                } catch (InvalidKeyFormatException ignored) {
                 }
-                return o;
+                return document;
             }
 
             @Override

@@ -9,6 +9,8 @@ import me.prettyprint.hector.api.factory.HFactory;
 import me.prettyprint.hector.api.mutation.Mutator;
 import me.prettyprint.hector.api.query.QueryResult;
 import me.prettyprint.hector.api.query.RangeSlicesQuery;
+import org.openspaces.bestpractices.mirror.common.tests.FileCallback;
+import org.openspaces.bestpractices.mirror.common.tests.FileUtil;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
