@@ -10,26 +10,11 @@
     <bean id="propertiesConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
     </bean>
 
-    <!-- BEGIN mongo config -->
-    <mongo:mongo id="mongo" host="localhost" port="27017">
-        <mongo:options connections-per-host="10"
-                       threads-allowed-to-block-for-connection-multiplier="5"
-                       max-wait-time="12000"
-                       connect-timeout="1000"
-                       socket-timeout="0"
-                       auto-connect-retry="0"/>
-    </mongo:mongo>
-
-    <bean id="mongoEDS" class="org.openspaces.bestpractices.mirror.mongodb.common.MongoEDS">
-        <property name="databaseName" value="test"/>
-        <property name="mongo" ref="mongo"/>
-    </bean>
-    <!-- END cassandra config -->
     <!--
         The mirror space. Uses the Hibernate external data source. Persists changes done on the Space that
         connects to this mirror space into the database using Hibernate.
     -->
-    <os-core:space id="space" url="/./space" mirror="true" external-data-source="mongoEDS">
+    <os-core:space id="space" url="/./space">
         <os-core:properties>
             <props>
                 <prop key="space-config.external-data-source.data-class">com.j_spaces.core.IGSEntry</prop>

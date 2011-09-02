@@ -20,7 +20,7 @@
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-mongodb</artifactId>
-            <version>1.0.0.M3</version>
+            <version>${springDataVersion}</version>
         </dependency>
     </dependencies>
 </project>

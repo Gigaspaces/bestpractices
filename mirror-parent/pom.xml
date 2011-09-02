@@ -22,6 +22,7 @@
         <testngVersion>6.1.1</testngVersion>
         <cassandraVersion>0.8.4</cassandraVersion>
         <hectorVersion>0.8.0-2</hectorVersion>
+        <springDataVersion>1.0.0.M3</springDataVersion>
     </properties>
 
     <dependencies>
@@ -61,7 +62,7 @@
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
+            <artifactId>slf4j-log4j12</artifactId>
             <version>1.6.1</version>
         </dependency>
     </dependencies>
@@ -93,7 +94,7 @@
     <repositories>
         <repository>
             <id>mvel</id>
-            <url>https://dav.codehaus.org/repository/mvel/</url>
+            <url>http://dav.codehaus.org/repository/mvel/</url>
             <layout>default</layout>
         </repository>
     </repositories>

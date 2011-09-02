@@ -55,6 +55,14 @@ public class MongoEDS extends AbstractNoSQLEDS {
     public void init(Properties props) throws DataSourceException {
     }
 
+    @Override
+    public void executeBulk(List<BulkItem> bulkItems) throws DataSourceException {
+        for(BulkItem item:bulkItems) {
+            System.out.println(item.getItem());
+        }
+        super.executeBulk(bulkItems);
+    }
+
     public void shutdown() throws DataSourceException {
     }
 
@@ -95,7 +103,10 @@ public class MongoEDS extends AbstractNoSQLEDS {
         BasicDBObject dbObject = new BasicDBObject();
         for (String key : item.getItemValues().keySet()) {
             if (item.getItemValues().get(key) != null) {
-                dbObject.put(key, item.getItemValues().get(key));
+                if (item.getItemValues().get(key) instanceof Map) {
+                } else {
+                    dbObject.put(key, item.getItemValues().get(key));
+                }
             }
         }
         System.out.println(dbObject);
@@ -132,6 +143,7 @@ public class MongoEDS extends AbstractNoSQLEDS {
             @Override
             public Object next() {
                 DBObject dbObject = cursor.next();
+                log.error(dbObject.toString());
                 Object o = null;
                 try {
                     String uid = (String) dbObject.get("_id");

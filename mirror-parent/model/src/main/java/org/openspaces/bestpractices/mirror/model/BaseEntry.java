@@ -1,9 +1,10 @@
 package org.openspaces.bestpractices.mirror.model;
 
 import com.gigaspaces.annotation.pojo.SpaceId;
-import com.gigaspaces.annotation.pojo.SpaceRouting;
+import org.springframework.data.annotation.Id;
 
 public class BaseEntry {
+    @Id
     String id;
 
     @SpaceId(autoGenerate = true)
