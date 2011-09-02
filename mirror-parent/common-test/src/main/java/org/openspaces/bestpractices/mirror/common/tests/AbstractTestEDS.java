@@ -115,14 +115,14 @@ public class AbstractTestEDS {
                         .setProperty("CatalogNumber", "00001")
                         .setProperty("Name", "Product 1")
                         .setProperty("Category", "hardware")
-                        .setProperty("Price", 15.00)
+                        .setProperty("Price", "15.00")
         ));
         gigaspace.write(new SpaceDocument("Product",
                 new DocumentProperties()
                         .setProperty("CatalogNumber", "00002")
                         .setProperty("Name", "Product 2")
                         .setProperty("Category", "software")
-                        .setProperty("Price", 25.00)
+                        .setProperty("Price", "25.00")
         ));
     }
 
@@ -130,13 +130,14 @@ public class AbstractTestEDS {
     public void testDocumentFromInitialLoadAndUpdate() {
         SpaceDocument template = new SpaceDocument("Product",
                 new DocumentProperties()
-                        .setProperty("CatalogNumber", "00001"));
+                        .setProperty("CatalogNumber", "00001")
+                        .setProperty("Category", "hardware"));
         SpaceDocument product = gigaspace.readIfExists(template);
         assertNotNull(product);
-        assertEquals(15.00, product.getProperty("Price"));
+        assertEquals("15.00", product.getProperty("Price"));
         assertEquals("Product 1", product.getProperty("Name"));
         assertEquals("hardware", product.getProperty("Category"));
-        product.setProperty("Price", 13.99); // woo, price went DOWN
+        product.setProperty("Price", "13.99"); // woo, price went DOWN
         // can't use PARTIAL_UPDATE for dynamic properties
         gigaspace.write(product, Lease.FOREVER, 100, UpdateModifiers.UPDATE_OR_WRITE);
     }
@@ -145,10 +146,11 @@ public class AbstractTestEDS {
     public void testDocumentUpdatedAndRemove() {
         SpaceDocument template = new SpaceDocument("Product",
                 new DocumentProperties()
-                        .setProperty("CatalogNumber", "00001"));
+                        .setProperty("CatalogNumber", "00001")
+                        .setProperty("Category", "hardware"));
         SpaceDocument product = gigaspace.takeIfExists(template);
         assertNotNull(product);
-        assertEquals(13.99, product.getProperty("Price"));
+        assertEquals("13.99", product.getProperty("Price"));
         assertEquals("Product 1", product.getProperty("Name"));
         assertEquals("hardware", product.getProperty("Category"));
     }
@@ -157,7 +159,8 @@ public class AbstractTestEDS {
     public void testDocumentRemovedData() {
         SpaceDocument template = new SpaceDocument("Product",
                 new DocumentProperties()
-                        .setProperty("CatalogNumber", "00001"));
+                        .setProperty("CatalogNumber", "00001")
+                        .setProperty("Category", "hardware"));
         SpaceDocument product = gigaspace.readIfExists(template);
         assertNull(product);
     }

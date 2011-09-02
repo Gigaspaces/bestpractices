@@ -11,8 +11,8 @@
         <module>common</module>
         <module>model</module>
         <module>common-test</module>
-        <module>cassandra</module>
         <module>mongodb</module>
+        <module>cassandra</module>
     </modules>
 
     <packaging>pom</packaging>

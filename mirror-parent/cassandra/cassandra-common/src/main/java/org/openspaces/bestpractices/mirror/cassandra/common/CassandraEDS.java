@@ -3,6 +3,7 @@ package org.openspaces.bestpractices.mirror.cassandra.common;
 import com.gigaspaces.datasource.BulkItem;
 import com.gigaspaces.datasource.DataIterator;
 import com.gigaspaces.datasource.DataSourceException;
+import com.gigaspaces.document.SpaceDocument;
 import com.j_spaces.core.IGSEntry;
 import me.prettyprint.cassandra.serializers.StringSerializer;
 import me.prettyprint.cassandra.service.ThriftKsDef;
@@ -36,7 +37,7 @@ public class CassandraEDS extends AbstractNoSQLEDS {
 
     @Override
     protected boolean isConnected() {
-        return cluster!=null;
+        return cluster != null;
     }
 
     public String getColumnFamily() {
@@ -116,8 +117,8 @@ public class CassandraEDS extends AbstractNoSQLEDS {
 
     @Override
     protected void remove(Map<String, Object> context, BulkItem item) {
-        IGSEntry entry= (IGSEntry) item.getItem();
-        Mutator<String> mutator= getMutatorFromContext(context);
+        IGSEntry entry = (IGSEntry) item.getItem();
+        Mutator<String> mutator = getMutatorFromContext(context);
         mutator.addDeletion(getKeyValue(entry), columnFamily);
     }
 
@@ -194,6 +195,9 @@ public class CassandraEDS extends AbstractNoSQLEDS {
                 String type = getTypeFromKey(id);
                 String uid = getIdFromKey(id);
                 List<HColumn<String, String>> hColumns = row.getColumnSlice().getColumns();
+                // okay, we need to do different things based on the underlying type.
+                // if it's registered as a SpaceDocument... act like it.
+
                 try {
                     o = Class.forName(type).newInstance();
                     Map<String, Object> context = new HashMap<String, Object>();
@@ -208,7 +212,13 @@ public class CassandraEDS extends AbstractNoSQLEDS {
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
+                    // let's assume it's a SpaceDocument, and act accordingly.
+                    SpaceDocument sd = new SpaceDocument(type);
+                    for (HColumn<String, String> hColumn : hColumns) {
+                        sd.setProperty(hColumn.getName(), hColumn.getValue());
+                    }
+                    sd.setProperty("id", uid);
+                    o = sd;
                 }
                 return o;
             }
