@@ -3,27 +3,18 @@ package org.openspaces.bestpractices.mirror.cassandra.common;
 import org.openspaces.bestpractices.mirror.common.tests.AbstractTestEDS;
 import org.openspaces.bestpractices.mirror.common.tests.FileCallback;
 import org.openspaces.bestpractices.mirror.common.tests.FileUtil;
-import org.openspaces.bestpractices.mirror.model.Person;
-import org.openspaces.core.GigaSpace;
-import org.openspaces.core.GigaSpaceConfigurer;
-import org.openspaces.core.cluster.ClusterInfo;
-import org.openspaces.core.space.UrlSpaceConfigurer;
-import org.openspaces.pu.container.ProcessingUnitContainer;
-import org.openspaces.pu.container.integrated.IntegratedProcessingUnitContainerProvider;
-import org.springframework.core.io.ClassPathResource;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 
 import java.io.IOException;
 
-import static org.testng.Assert.assertNotNull;
-
 public class TestCassandraEDS extends AbstractTestEDS {
     CassandraTestUtil cassandraUtil = new CassandraTestUtil();
-    private FileUtil fileUtil=new FileUtil();
+    private FileUtil fileUtil = new FileUtil();
 
     @BeforeClass
     public void startCassandra() throws IOException {
-final String ref[] = new String[1];
+        final String ref[] = new String[1];
         FileCallback fileCallback = new FileCallback() {
             @Override
             public void found(String filename) {
@@ -39,5 +30,21 @@ final String ref[] = new String[1];
     @AfterClass
     public void shutdownCassandra() {
         cassandraUtil.shutDownCassandra();
+    }
+
+    @Override
+    public void testDocumentRemovedData() {
+    }
+
+    @Override
+    public void testDocumentFromInitialLoadAndUpdate() {
+    }
+
+    @Override
+    public void testDocumentUpdatedAndRemove() {
+    }
+
+    @Override
+    public void storeDocumentToTestMirror() {
     }
 }
