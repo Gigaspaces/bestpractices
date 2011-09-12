@@ -1,0 +1,4 @@
+FILE QUARANTINED
+
+Microsoft Online has removed timeseries.rar->timeseries\bin\start-feeder.bat since it
+was found to match the FILE FILTER= unnamed: *.bat file filter.
