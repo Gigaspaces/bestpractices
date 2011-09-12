@@ -78,24 +78,6 @@ public class Worker implements ClusterInfoAware, InitializingBean {
 		return result;
 	}
 
-	/*
-	 * @SpaceDataEvent public Result execute(Request request) { //long stTime =
-	 * System.currentTimeMillis();
-	 * 
-	 * System.out.println(" Worker " + workerID +
-	 * " execute called to calculate " + request.getTradeIds().length +
-	 * " trades"); Result result = new Result();
-	 * result.setJobID(request.getJobID());
-	 * result.setTaskID(request.getTaskID());
-	 * result.setRouting(request.getRouting()); try { HashMap<String, Double>
-	 * resultData = CalculateNPVUtil.execute(gigaspaceLocalCache, gigaspace,
-	 * request.getTradeIds(), workerID, request.getRate());
-	 * result.setResultData(resultData); } catch (Exception e) {
-	 * e.printStackTrace(); } //long endTime = System.currentTimeMillis();
-	 * //System.out.println("Worker time:" + (endTime - stTime)); return result;
-	 * }
-	 */
-
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		IJSpace localSpaceProxy = new LocalCacheSpaceConfigurer(

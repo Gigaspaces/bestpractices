@@ -19,7 +19,7 @@
 	<!-- Enable support for @Polling annotation -->
 	<os-events:annotation-support />
 
-	<os-core:space id="space" url="/./e-auction-space" gateway-targets="gatewayTargets" />
+	<os-core:space id="space" url="/./wanSpaceTWO" gateway-targets="gatewayTargets" />
 	<os-core:giga-space id="gigaSpace" space="space"
 		tx-manager="transactionManager" />
 

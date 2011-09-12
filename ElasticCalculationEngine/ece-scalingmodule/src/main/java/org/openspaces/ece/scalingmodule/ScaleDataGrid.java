@@ -24,7 +24,7 @@ public class ScaleDataGrid {
     @Parameter(names = {"-l", "--locator"})
     String locator = "127.0.0.1";
     @Parameter(names = {"-g", "--group"})
-    String group = "Gigaspaces-XAPPremium-8.0.3-rc";
+    String group = "Gigaspaces-XAPPremium-8.0.3-ga";
     @Parameter(names = {"-n", "--name"})
     String processingUnitName = "ece-datagrid";
     @Parameter(names = {"-m"})
@@ -73,9 +73,6 @@ public class ScaleDataGrid {
                     .memoryCapacityPerContainer(allocationChunk, MemoryUnit.MEGABYTES)
                     .maxMemoryCapacity(memoryCapacity * 4, MemoryUnit.MEGABYTES)
                             //		         .maxNumberOfCpuCores(maxNumberOfCpuCores)
-                    .addContextProperty("cluster-config.groups.group.fail-over-policy.active-election.yield-time", "300")
-                    .addContextProperty("cluster-config.groups.group.fail-over-policy.active-election.fault-detector.invocation-delay", "300")
-                    .addContextProperty("cluster-config.groups.group.fail-over-policy.active-election.fault-detector.retry-count", "2")
                     .addContextProperty("space-config.proxy-settings.connection-retries", "5")
                             //initial scale
                     .scale(new ManualCapacityScaleConfigurer().
