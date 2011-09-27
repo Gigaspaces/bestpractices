@@ -84,7 +84,7 @@
 			<version>2.9</version>
         	<configuration>
 			  <systemPropertyVariables>
-  			    <com.gs.licensekey>Oct 27, 2011~GigaSpaces-eval@z4QENwHrPOSSSPP3SNQy#PREMIUM^8.0Cloudify%UNBOUND+UNLIMITED//WAN</com.gs.licensekey>
+  			    <com.gs.licensekey>${env.GSLICENSE}</com.gs.licensekey>
   			  </systemPropertyVariables>
         	</configuration>
 		  </plugin>
