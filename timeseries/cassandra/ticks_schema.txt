@@ -1,0 +1,17 @@
+drop keyspace TEST;
+create keyspace TEST;
+use TEST;
+
+create column family ORG_OPENSPACES_TIMESERIES_COMMON_MARKETDATAEVENT with
+  comparator = UTF8Type and
+  column_metadata =
+  [
+    {column_name: id, validation_class: UTF8Type},
+    {column_name: eventType, validation_class: UTF8Type},
+    {column_name: sequence, validation_class: LongType}
+    {column_name: symbol, validation_class: UTF8Type, index_type: KEYS}
+    {column_name: tickdata, validation_class: UTF8Type},
+    {column_name: eventTime, validation_class: LongType, index_type:KEYS}
+  ];
+  
+  

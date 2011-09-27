@@ -1,14 +1,14 @@
 package org.openspaces.timeseries.service;
 
 import org.openspaces.remoting.Routing;
-import org.openspaces.timeseries.common.MarketDataEvent;
 
 
 
 public interface MarketDataService {
+	
+	int getTotalTicks();
 
+	String[][] getTicks(@Routing String symbol, String[] tickTypes, Long starttime, Long endtime);
 	
-	MarketDataEvent[] getTicks(@Routing String symbol, String tickType, Long starttime, Long endtime);
-	
-	
+	void clear();
 }

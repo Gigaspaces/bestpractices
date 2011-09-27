@@ -1,0 +1,80 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.openspaces.timeseries</groupId>
+  <artifactId>timeseries-web</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>timeseries-web</name>
+
+
+	<parent>
+	<groupId>timeseries</groupId>
+	<artifactId>timeseries</artifactId>
+	<version>1.0</version>
+   </parent>
+  
+  
+  <dependencies>
+  	<dependency>
+  		<groupId>com.sencha</groupId>
+  		<artifactId>gxt</artifactId>
+  		<version>2.2.4</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>com.google</groupId>
+  		<artifactId>gwt</artifactId>
+  		<version>2.4.0</version>
+  	</dependency>
+  	<dependency>
+	  <groupId>org.openspaces.timeseries.common</groupId>
+	  <artifactId>timeseries-services</artifactId>
+	  <version>1.0</version>
+  	</dependency>
+  	
+  </dependencies>
+  
+ <build>
+    <plugins>
+    
+ <!--      <plugin>
+      	<groupId>org.codehaus.mojo</groupId>
+      	<artifactId>gwt-maven-plugin</artifactId>
+      	<version>2.3.0-1</version>
+      	<executions>
+      		<execution>
+      			<id>gwt-compile</id>
+      			<phase>package</phase>
+      			<goals><goal>compile</goal></goals>
+      			<configuration>
+      				<warSourceDirectory>${basedir}/war</warSourceDirectory>
+      				<webappDirectory>${basedir}/war</webappDirectory>
+      				<compileReport>true</compileReport>
+      				<gwtVersion>2.4.0</gwtVersion>
+      			</configuration>
+      		</execution>
+      	</executions>
+      </plugin>
+    -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.6</version>
+        <executions> 
+        	<execution>
+        		<id>x</id>
+        		<phase>package</phase>
+        		<goals><goal>run</goal></goals>
+		        <configuration>
+		        	<target name="war">
+		        		<copy file="${org.openspaces.timeseries.common:timeseries-services:jar}" todir="${basedir}/war/WEB-INF/lib"/>
+		        		<delete file="${project.build.directory}/${project.name}-${project.version}.war"/>
+		        		<jar destfile="${project.build.directory}/${project.name}-${project.version}.war" basedir="${basedir}/war" />
+		        	</target>
+		        </configuration>
+        	</execution>
+        </executions>
+      </plugin>
+      
+      
+    </plugins>
+  </build>  
+</project>
