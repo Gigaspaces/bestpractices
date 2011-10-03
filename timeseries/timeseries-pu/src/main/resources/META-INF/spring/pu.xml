@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:os-core="http://www.openspaces.org/schema/core"
+	xmlns:os-events="http://www.openspaces.org/schema/events"
+	xmlns:os-remoting="http://www.openspaces.org/schema/remoting"
+	xmlns:os-sla="http://www.openspaces.org/schema/sla"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.openspaces.org/schema/core http://www.openspaces.org/schema/core/openspaces-core.xsd
+       http://www.openspaces.org/schema/events http://www.openspaces.org/schema/events/openspaces-events.xsd
+       http://www.openspaces.org/schema/remoting http://www.openspaces.org/schema/remoting/openspaces-remoting.xsd
+       http://www.openspaces.org/schema/sla http://www.openspaces.org/schema/sla/openspaces-sla.xsd">
+       
+ 		<context:component-scan base-package="org.openspaces.timeseries" />
+    	<context:annotation-config/> 
+		<os-core:giga-space-context/>
+		<os-remoting:annotation-support />
+		<os-events:annotation-support />	
+       
+
+	<os-sla:sla cluster-schema="partitioned-sync2backup" number-of-backups="0"></os-sla:sla>
+		
+	<os-core:space id="space" url="/./space" mirror="true"/>
+	
+	<os-core:local-tx-manager id="transactionManager"
+		default-timeout="10" commit-timeout="10000" space="space" />
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+	<os-core:giga-space id="gigaSpace" space="space"
+		tx-manager="transactionManager" />
+
+	<bean id="timer" class="org.openspaces.timeseries.processor.PeriodTimer"/>
+
+	<bean id="volatility10sec" class="org.openspaces.timeseries.analytics.volatility.VolatilityProcessor">
+		<property name="interval" value="10"/>
+		<property name="timer" ref="timer"/>
+	</bean>
+	<bean id="vwap10sec" class="org.openspaces.timeseries.analytics.vwap.VwapProcessor">
+		<property name="interval" value="10"/>
+		<property name="timer" ref="timer"/>
+	</bean>
+	<bean id="ave10sec" class="org.openspaces.timeseries.analytics.average.AverageProcessor">
+		<property name="interval" value="10"/>
+		<property name="timer" ref="timer"/>
+	</bean>
+	<bean id="volume10sec" class="org.openspaces.timeseries.analytics.volume.VolumeProcessor">
+		<property name="interval" value="10"/>
+		<property name="timer" ref="timer"/>
+	</bean>
+
+	<bean id="tickgen" class="org.openspaces.timeseries.util.TickGenerator"/>
+
+	<os-remoting:service-exporter id="serviceExporter"/>
+
+</beans>

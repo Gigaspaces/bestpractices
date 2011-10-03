@@ -14,17 +14,6 @@
   <url>http://maven.apache.org</url>
   <dependencies>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-    	<groupId>com.gigaspaces</groupId>
-    	<artifactId>gs-openspaces</artifactId>
-    	<version>8.0.3</version>
-   	</dependency>
-    <dependency>
           <groupId>org.openspaces.timeseries.common</groupId>
           <artifactId>timeseries-model</artifactId>
           <version>1.0</version>

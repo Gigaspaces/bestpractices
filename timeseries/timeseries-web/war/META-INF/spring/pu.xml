@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" 
+	xmlns:os-core="http://www.openspaces.org/schema/core"
+	xmlns:os-events="http://www.openspaces.org/schema/events"
+	xmlns:os-remoting="http://www.openspaces.org/schema/remoting"
+	xmlns:os-sla="http://www.openspaces.org/schema/sla"
+	xsi:schemaLocation=
+	  "http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.openspaces.org/schema/core http://www.openspaces.org/schema/core/openspaces-core.xsd
+       http://www.openspaces.org/schema/events http://www.openspaces.org/schema/events/openspaces-events.xsd
+       http://www.openspaces.org/schema/remoting http://www.openspaces.org/schema/remoting/openspaces-remoting.xsd
+       http://www.openspaces.org/schema/sla http://www.openspaces.org/schema/sla/openspaces-sla.xsd
+       ">
+
+	<os-core:annotation-support/>
+	<os-core:giga-space-context/>
+	<context:annotation-config/>
+	<context:component-scan base-package="org.openspaces.timeseries.server"/>
+
+	<!--  <os-core:space id="space" url="jini://*/*/space"/> -->
+	<os-core:space id="space" url="jini://*/*/space"/>
+
+	<os-core:giga-space id="gigaSpace" space="space"
+		tx-manager="transactionManager" />
+
+	<os-core:local-tx-manager id="transactionManager"
+		default-timeout="10" commit-timeout="10000" space="space" />
+		
+    <os-remoting:executor-proxy id="ticksProxy" giga-space="gigaSpace" 
+           interface="org.openspaces.timeseries.service.TickGeneratorService"/>
+
+    <os-remoting:executor-proxy id="mdsProxy" giga-space="gigaSpace" 
+           interface="org.openspaces.timeseries.service.MarketDataService"/>
+		
+		
+</beans>

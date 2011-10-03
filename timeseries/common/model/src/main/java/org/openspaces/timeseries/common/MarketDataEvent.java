@@ -1,17 +1,22 @@
 package org.openspaces.timeseries.common;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
 
 import com.gigaspaces.annotation.pojo.FifoSupport;
 import com.gigaspaces.annotation.pojo.SpaceClass;
+import com.gigaspaces.annotation.pojo.SpaceExclude;
 import com.gigaspaces.annotation.pojo.SpaceId;
 import com.gigaspaces.annotation.pojo.SpaceIndex;
 import com.gigaspaces.annotation.pojo.SpaceRouting;
 import com.gigaspaces.metadata.index.SpaceIndexType;
 
 @SuppressWarnings("serial")
-@SpaceClass(fifoSupport=FifoSupport.OPERATION)
+@SpaceClass(fifoSupport=FifoSupport.OPERATION,persist=true)
 public class MarketDataEvent implements Serializable {
+	static Logger log=Logger.getLogger(MarketDataEvent.class.getName());
 	/**
 	 * 
 	 */
@@ -23,7 +28,7 @@ public class MarketDataEvent implements Serializable {
 	private String symbol=null;
 	private TradeTick tradeData=null;
 	private QuoteTick quoteData=null;
-	private Object synthData=null;
+	private StringValProvider synthData=null;
 	private String eventType=null;
 
 	public MarketDataEvent(){
@@ -75,8 +80,28 @@ public class MarketDataEvent implements Serializable {
 	}
 
 	public String toString(){
-		return String.format("%05d %s %s", sequence,symbol,((quoteData!=null)?quoteData.toString():tradeData.toString()));
+		String res=null;
+		
+		if(quoteData!=null){
+			res=String.format("%05d %s %s", sequence,symbol,quoteData.toString());			
+		}
+		else if(tradeData!=null){
+			res=String.format("%05d %s %s", sequence,symbol,tradeData.toString());			
+		}
+		else if(synthData!=null){
+			res=String.format("%05d %s %s", sequence,symbol,synthData.toString());			
+		}
+		return res;
 	}
+	
+	@SpaceExclude
+	public List<String> getStringVals(){
+		if(quoteData!=null)return quoteData.getStringVals();
+		if(tradeData!=null)return tradeData.getStringVals();
+		if(synthData!=null)return synthData.getStringVals();
+		return null;
+	}
+	
 	public TradeTick getTradeData() {
 		return tradeData;
 	}
@@ -101,16 +126,17 @@ public class MarketDataEvent implements Serializable {
 
 	
 	
-	public Object getSynthData() {
+	public StringValProvider getSynthData() {
 		return synthData;
 	}
-	public void setSynthData(Object synthData) {
+	
+	public void setSynthData(StringValProvider synthData) {
 		this.synthData = synthData;
 	}
 
 
 
-	public static class QuoteTick implements Serializable{
+	public static class QuoteTick implements StringValProvider,Serializable{
 
 		private double bid;
 		private double ask;
@@ -143,11 +169,22 @@ public class MarketDataEvent implements Serializable {
 		}
 		
 		public String toString(){
-			return String.format("Q bid=%-8.2d ask=%-8.2d bidvol=%d askvol=%d",bid,ask,bidvol,askvol);
+			return String.format("Q bid=%-8.2f ask=%-8.2f bidvol=%d askvol=%d",bid,ask,bidvol,askvol);
+		}
+		@Override
+		@SpaceExclude
+		public List<String> getStringVals() {
+			List<String> l=new ArrayList<String>();
+			l.add(String.valueOf(bid));
+			l.add(String.valueOf(bidvol));
+			l.add(String.valueOf(ask));
+			l.add(String.valueOf(askvol));
+			return l;
 		}
 	}
 	
-	public static class TradeTick implements Serializable{
+
+	public static class TradeTick implements StringValProvider,Serializable{
 		
 		private double price;
 		private int volume;
@@ -170,6 +207,15 @@ public class MarketDataEvent implements Serializable {
 		
 		public String toString(){
 			return String.format("T pri=%-8.2f vol=%d",price,volume);
+		}
+
+		@Override
+		@SpaceExclude
+		public List<String> getStringVals() {
+			List<String> l=new ArrayList<String>();
+			l.add(String.valueOf(price));
+			l.add(String.valueOf(volume));
+			return l;
 		}
 		
 
