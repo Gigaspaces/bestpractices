@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:os-core="http://www.openspaces.org/schema/core"
+       xmlns:os-events="http://www.openspaces.org/schema/events"
+       xmlns:os-remoting="http://www.openspaces.org/schema/remoting"
+       xmlns:os-sla="http://www.openspaces.org/schema/sla"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.openspaces.org/schema/core http://www.openspaces.org/schema/8.0/core/openspaces-core.xsd
+       http://www.openspaces.org/schema/events http://www.openspaces.org/schema/8.0/events/openspaces-events.xsd
+       http://www.openspaces.org/schema/remoting http://www.openspaces.org/schema/8.0/remoting/openspaces-remoting.xsd
+       http://www.openspaces.org/schema/sla http://www.openspaces.org/schema/sla/8.0/openspaces-sla.xsd">
+
+    <import resource="classpath:ordermanagement-common.xml" />
+
+    <bean id="propertiesConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    </bean>
+
+    <!--
+        A bean that starts up HSQL as a server. Allows to connect to it from within this context as well
+        as connecting to it remotely.
+     -->
+    <bean id="hsqldbServer" class="org.openspaces.persistency.utils.HsqlServerBean">
+        <property name="dataSource"><ref local="dataSource"/></property>
+        <property name="serverProperties">
+            <props>
+                <prop key="server.database.0">C:\\Users\\joeo/order.management-testDB</prop>
+                <prop key="server.dbname.0">testDB</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!--
+        A JDBC datasource pool that connects to HSQL.
+    -->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" depends-on="hsqldbServer">
+        <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+        <property name="url" value="jdbc:hsqldb:hsql://localhost/testDB"/>
+        <property name="username" value="sa"/>
+        <property name="password" value=""/>
+    </bean>
+
+    <!--
+        Hibernate SessionFactory bean. Uses the pooled data source to connect to the database.
+    -->
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="annotatedClasses">
+            <list>
+                <value>com.gigaspaces.tutorials.common.Data</value>
+            </list>
+        </property>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
+                <prop key="hibernate.cache.provider_class">org.hibernate.cache.NoCacheProvider</prop>
+                <prop key="hibernate.cache.use_second_level_cache">false</prop>
+                <prop key="hibernate.cache.use_query_cache">false</prop>
+                <prop key="hibernate.hbm2ddl.auto">update</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!--
+        An external data source that will be responsible for persisting changes done on the cluster that
+        connects to this mirror using Hibernate.
+    -->
+    <bean id="hibernateDataSource" class="org.openspaces.persistency.hibernate.DefaultHibernateExternalDataSource">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+
+    <!--
+        The mirror space. Uses the Hibernate external data source. Persists changes done on the Space that
+        connects to this mirror space into the database using Hibernate.
+    -->    
+    <os-core:mirror id="mirror" url="/./mirror-service" external-data-source="hibernateDataSource">
+		<os-core:source-space name="space" partitions="2" backups="1"/>      
+	</os-core:mirror>
+
+</beans>
