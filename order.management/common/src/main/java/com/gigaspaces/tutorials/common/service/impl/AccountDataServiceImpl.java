@@ -21,6 +21,12 @@ public class AccountDataServiceImpl implements AccountDataService {
     dao.write(data);
   }
 
+  /**
+   * Destructive read for account with matching userName
+   * @param userName the username (account id)
+   * @param timeout number of ms to wait
+   * @return a matching account, or null if not found
+   */
   @Override
   public AccountData load(String userName, int timeout) {
     return dao.pollById(userName, timeout);

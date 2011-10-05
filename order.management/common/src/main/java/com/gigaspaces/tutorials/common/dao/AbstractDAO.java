@@ -1,5 +1,6 @@
 package com.gigaspaces.tutorials.common.dao;
 
+import com.gigaspaces.query.IdQuery;
 import com.gigaspaces.tutorials.common.model.BaseEntity;
 import com.google.common.collect.MapMaker;
 import com.j_spaces.core.client.SQLQuery;
@@ -145,12 +146,12 @@ public class AbstractDAO<T extends BaseEntity> implements DAO<T> {
 
   @Override
   public T takeById(String id) {
-    return gigaspace.takeById(persistentClass, id);
+    return gigaspace.takeById(new IdQuery<T>(persistentClass, id));
   }
 
   @Override
   public T takeById(String id, long timeout) {
-    return gigaspace.takeById(persistentClass, id, timeout);
+    return gigaspace.takeById(new IdQuery<T>(persistentClass, id), timeout);
   }
 
   @Override

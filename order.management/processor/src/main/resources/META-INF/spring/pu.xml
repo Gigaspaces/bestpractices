@@ -96,24 +96,4 @@
         The data processor bean
     -->
     <bean id="dataProcessor" class="com.gigaspaces.tutorials.processor.Processor"/>
-
-    <!--
-        A polling event container that perfoms (by default) polling take operations against
-        the space using the provided template (in our case, and the non processed data objects).
-        Once a match is found, the data processor bean event listener is triggered using the
-        annotation adapter.
-    -->
-    <os-events:polling-container id="dataProcessorPollingEventContainer" giga-space="gigaSpace">
-        <os-events:tx-support tx-manager="transactionManager"/>
-        <os-core:template>
-            <bean class="com.gigaspaces.tutorials.common.Data">
-                <property name="processed" value="false"/>
-            </bean>
-        </os-core:template>
-        <os-events:listener>
-            <os-events:annotation-adapter>
-                <os-events:delegate ref="dataProcessor"/>
-            </os-events:annotation-adapter>
-        </os-events:listener>
-    </os-events:polling-container>
 </beans>
