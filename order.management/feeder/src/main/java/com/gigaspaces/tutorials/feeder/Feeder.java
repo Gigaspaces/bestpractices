@@ -3,13 +3,16 @@ package com.gigaspaces.tutorials.feeder;
 import com.gigaspaces.tutorials.common.builder.OrderEventBuilder;
 import com.gigaspaces.tutorials.common.model.Operation;
 import com.gigaspaces.tutorials.common.model.OrderEvent;
+import com.gigaspaces.tutorials.common.model.Status;
 import com.gigaspaces.tutorials.common.service.OrderEventService;
 import org.openspaces.core.GigaSpace;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -26,8 +29,8 @@ import java.util.logging.Logger;
  * <p>The scheduling uses the java.util.concurrent Scheduled Executor Service. It
  * is started and stopped based on Spring lifecycle events.
  */
+@Service
 public class Feeder implements InitializingBean, DisposableBean {
-
   Logger log = Logger.getLogger(this.getClass().getName());
 
   private ScheduledExecutorService executorService;
@@ -37,8 +40,8 @@ public class Feeder implements InitializingBean, DisposableBean {
   private Random randomGen = new Random();
 
   private long defaultDelay = 1000;
-  private Integer numberOfAccounts;
-  private Integer missRate;
+  private Integer numberOfAccounts = 1000;
+  private Integer missRate = 20;
 
   public Integer getNumberOfAccounts() {
     return numberOfAccounts;
@@ -86,19 +89,21 @@ public class Feeder implements InitializingBean, DisposableBean {
     private int counter = 0;
 
     public void run() {
-      int accounts = (int) (getNumberOfAccounts() + (getNumberOfAccounts() * (0.1 * getMissRate())));
+      int accounts = (int) (getNumberOfAccounts() + (getNumberOfAccounts() * (0.01 * getMissRate())));
       try {
         //	Create a new orderEvent with randomized userName , price and
         //	operation divided between buy and sell values.
         OrderEvent orderEvent = new OrderEventBuilder()
-                                .id("USER" + randomGen.nextInt(accounts + 1))
+                                .id(UUID.randomUUID().toString())
+                                .username("USER " + randomGen.nextInt(accounts + 1))
                                 .price(100)
                                 .operation(randomOrderOperation())
+                                .status(Status.NEW)
                                 .build();
         service.post(orderEvent);
         counter++;
         log.info("---[Wrote orderEvent: " + orderEvent + " ]---");
-      } catch (Exception e) {
+      } catch (Throwable e) {
         e.printStackTrace();
       }
     }

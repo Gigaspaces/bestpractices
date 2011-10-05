@@ -3,6 +3,11 @@ package com.gigaspaces.tutorials.common.model;
 import com.gigaspaces.annotation.pojo.SpaceId;
 import com.gigaspaces.annotation.pojo.SpaceProperty;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+
+@MappedSuperclass
 public class BaseEntity {
     String id;
     Long createTime;
@@ -34,6 +39,7 @@ public class BaseEntity {
     }
 
     @SpaceId(autoGenerate = false)
+    @Id
     public String getId() {
         return id;
     }
@@ -43,6 +49,7 @@ public class BaseEntity {
     }
 
     @SpaceProperty
+    @Column
     public Long getCreateTime() {
         return createTime;
     }
@@ -52,6 +59,7 @@ public class BaseEntity {
     }
 
     @SpaceProperty
+    @Column
     public Long getUpdateTime() {
         return updateTime;
     }

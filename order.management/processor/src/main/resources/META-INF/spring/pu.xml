@@ -11,10 +11,10 @@
        http://www.openspaces.org/schema/events http://www.openspaces.org/schema/8.0/events/openspaces-events.xsd
        http://www.openspaces.org/schema/remoting http://www.openspaces.org/schema/8.0/remoting/openspaces-remoting.xsd">
 
-    <import resource="classpath:ordermanagement-common.xml" />
-    <context:component-scan base-package="com.gigaspaces.tutorials.processor" />
-
-    <os-events:annotation-support />
+    <import resource="classpath:ordermanagement-common.xml"/>
+    <context:component-scan base-package="com.gigaspaces.tutorials.processor"/>
+    <context:annotation-config />
+    <os-events:annotation-support/>
     <!--
         Spring property configurer which allows us to use system properties (such as user.name).
     -->
@@ -42,7 +42,8 @@
         <property name="dataSource" ref="dataSource"/>
         <property name="annotatedClasses">
             <list>
-                <value>com.gigaspaces.tutorials.common.Data</value>
+                <value>com.gigaspaces.tutorials.common.model.AccountData</value>
+                <value>com.gigaspaces.tutorials.common.model.OrderEvent</value>
             </list>
         </property>
         <property name="hibernateProperties">
@@ -68,7 +69,7 @@
         The space is configured to connect to a mirror, and uses the configured external data source
         to perform the initial load operation from the database when the Space starts up.
     -->
-    <os-core:space id="space" url="/./space" schema="persistent" mirror="true"
+    <os-core:space id="space" url="/./orderManagement" schema="persistent" mirror="true"
                    external-data-source="hibernateDataSource">
         <os-core:properties>
             <props>
@@ -84,7 +85,7 @@
     <!--
         Defines a distributed transaction manager.
     -->
-     <os-core:distributed-tx-manager id="transactionManager"/>
+    <os-core:distributed-tx-manager id="transactionManager"/>
 
     <!--
         OpenSpaces simplified space API built on top of IJSpace/JavaSpace.

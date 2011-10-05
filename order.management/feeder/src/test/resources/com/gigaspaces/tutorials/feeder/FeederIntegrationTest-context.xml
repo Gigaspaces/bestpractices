@@ -15,21 +15,25 @@
 
     <context:annotation-config/>
     <context:component-scan base-package="com.gigaspaces.tutorials.feeder"/>
+    <import resource="classpath:ordermanagement-common.xml" />
 
     <!--
-        Enables the usage of @GigaSpaceContext annotation based injection.
+        Spring property configurer which allows us to use system properties (such as user.name).
     -->
-    <os-core:giga-space-context/>
+    <bean id="propertiesConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
 
     <!--
         A bean representing a space (an IJSpace implementation).
-
-        Note, we perform a lookup on the space since we are working against a remote space.
     -->
-    <os-core:space id="space" url="jini://*/*/orderManagement"/>
+    <os-core:space id="space" url="/./feederSpace" lookup-groups="processor-integration-tests" />
+
+    <!--
+        Defines a distributed transaction manager.
+    -->
+     <os-core:distributed-tx-manager id="transactionManager"/>
 
     <!--
         OpenSpaces simplified space API built on top of IJSpace/JavaSpace.
     -->
-    <os-core:giga-space id="gigaSpace" space="space"/>
+    <os-core:giga-space id="gigaSpace" space="space" tx-manager="transactionManager"/>
 </beans>

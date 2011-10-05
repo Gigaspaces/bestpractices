@@ -3,13 +3,17 @@ package com.gigaspaces.tutorials.common.model;
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceRouting;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
 import java.math.BigDecimal;
 
 @SpaceClass
+@Entity
 public class AccountData extends BaseEntity {
   String userName;
   BigDecimal balance;
 
+  @Column
   public BigDecimal getBalance() {
     return balance;
   }
@@ -19,6 +23,7 @@ public class AccountData extends BaseEntity {
   }
 
   @SpaceRouting
+  @Column
   public String getUserName() {
     return userName;
   }

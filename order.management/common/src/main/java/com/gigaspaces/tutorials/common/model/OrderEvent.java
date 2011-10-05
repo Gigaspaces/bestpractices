@@ -3,6 +3,9 @@ package com.gigaspaces.tutorials.common.model;
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceRouting;
 
+import javax.persistence.Column;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import java.math.BigDecimal;
 
 @SpaceClass
@@ -15,6 +18,7 @@ public class OrderEvent extends BaseEntity {
   public OrderEvent() {
   }
 
+  @Enumerated(value = EnumType.STRING)
   public Operation getOperation() {
     return operation;
   }
@@ -24,6 +28,7 @@ public class OrderEvent extends BaseEntity {
   }
 
   @SpaceRouting
+  @Column
   public String getUserName() {
     return userName;
   }
@@ -32,6 +37,7 @@ public class OrderEvent extends BaseEntity {
     this.userName = userName;
   }
 
+  @Column
   public BigDecimal getPrice() {
     return price;
   }
@@ -40,6 +46,7 @@ public class OrderEvent extends BaseEntity {
     this.price = price;
   }
 
+  @Enumerated(value = EnumType.STRING)
   public Status getStatus() {
     return status;
   }
