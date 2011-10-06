@@ -15,6 +15,7 @@
 
     <context:annotation-config/>
     <context:component-scan base-package="com.gigaspaces.tutorials.feeder"/>
+    <context:component-scan base-package="com.gigaspaces.tutorials.common"/>
 
     <!--
         Enables the usage of @GigaSpaceContext annotation based injection.

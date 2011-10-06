@@ -13,7 +13,7 @@
        http://www.openspaces.org/schema/remoting http://www.openspaces.org/schema/8.0/remoting/openspaces-remoting.xsd
        http://www.openspaces.org/schema/sla http://www.openspaces.org/schema/sla/8.0/openspaces-sla.xsd">
 
-    <import resource="classpath:ordermanagement-common.xml" />
+    <!--<import resource="classpath:/ordermanagement-common.xml" />-->
 
     <bean id="propertiesConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
     </bean>
@@ -23,7 +23,9 @@
         as connecting to it remotely.
      -->
     <bean id="hsqldbServer" class="org.openspaces.persistency.utils.HsqlServerBean">
-        <property name="dataSource"><ref local="dataSource"/></property>
+        <property name="dataSource">
+            <ref local="dataSource"/>
+        </property>
         <property name="serverProperties">
             <props>
                 <prop key="server.database.0">C:\\Users\\joeo/order.management-testDB</prop>
@@ -35,7 +37,8 @@
     <!--
         A JDBC datasource pool that connects to HSQL.
     -->
-    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" depends-on="hsqldbServer">
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close"
+          depends-on="hsqldbServer">
         <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
         <property name="url" value="jdbc:hsqldb:hsql://localhost/testDB"/>
         <property name="username" value="sa"/>
@@ -75,9 +78,9 @@
     <!--
         The mirror space. Uses the Hibernate external data source. Persists changes done on the Space that
         connects to this mirror space into the database using Hibernate.
-    -->    
+    -->
     <os-core:mirror id="mirror" url="/./mirror-service" external-data-source="hibernateDataSource">
-		<os-core:source-space name="space" partitions="2" backups="1"/>      
-	</os-core:mirror>
+        <os-core:source-space name="space" partitions="2" backups="1"/>
+    </os-core:mirror>
 
 </beans>

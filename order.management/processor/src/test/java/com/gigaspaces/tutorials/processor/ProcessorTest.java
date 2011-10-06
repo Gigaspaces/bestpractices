@@ -52,6 +52,18 @@ public class ProcessorTest {
     assertEquals(data.getBalance(), new BigDecimal("100"));
 
     event = new OrderEventBuilder()
+            .id("1234")
+            .username("1234")
+            .status(Status.NEW)
+            .operation(Operation.BUY)
+            .price("112")
+            .build();
+    newEvent = processor.handleEvent(event);
+    assertEquals(newEvent.getStatus(), Status.INSUFFICIENT_FUNDS);
+    assertEquals(data.getBalance(), new BigDecimal("100"));
+
+
+    event = new OrderEventBuilder()
             .id("1235")
             .username("1235")
             .status(Status.NEW)

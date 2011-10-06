@@ -25,7 +25,7 @@ public class OrderEvent implements Serializable {
   public OrderEvent() {
   }
 
-  @SpaceId
+  @SpaceId(autoGenerate = true)
   @Id
   public String getId() {
     return id;

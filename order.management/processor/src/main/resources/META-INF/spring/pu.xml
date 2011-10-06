@@ -11,9 +11,9 @@
        http://www.openspaces.org/schema/events http://www.openspaces.org/schema/8.0/events/openspaces-events.xsd
        http://www.openspaces.org/schema/remoting http://www.openspaces.org/schema/8.0/remoting/openspaces-remoting.xsd">
 
-    <import resource="classpath:ordermanagement-common.xml"/>
+    <import resource="classpath:/ordermanagement-common.xml"/>
     <context:component-scan base-package="com.gigaspaces.tutorials.processor"/>
-    <context:annotation-config />
+    <context:annotation-config/>
     <os-events:annotation-support/>
     <!--
         Spring property configurer which allows us to use system properties (such as user.name).
