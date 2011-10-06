@@ -8,6 +8,8 @@ import org.openspaces.events.EventDriven;
 import org.openspaces.events.EventTemplate;
 import org.openspaces.events.adapter.SpaceDataEvent;
 import org.openspaces.events.polling.Polling;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @EventDriven
@@ -15,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class Validator {
   @Autowired
   AccountDataService service;
+  Logger logger = LoggerFactory.getLogger(this.getClass());
 
   @EventTemplate
   public OrderEvent getTemplate() {
@@ -32,6 +35,9 @@ public class Validator {
     }
     // build a new event - necessary?
     event.setId(null);
+    if (logger.isInfoEnabled()) {
+      logger.info("Validation result: " + event);
+    }
     return event;
   }
 }

@@ -39,7 +39,7 @@ public class Feeder implements InitializingBean, DisposableBean {
 
   private Random randomGen = new Random();
 
-  private long defaultDelay = 1000;
+  private long defaultDelay = 500;
   private Integer numberOfAccounts = 1000;
   private Integer missRate = 20;
 

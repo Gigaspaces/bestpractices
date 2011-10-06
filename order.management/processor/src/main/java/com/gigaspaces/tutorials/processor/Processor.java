@@ -10,6 +10,8 @@ import org.openspaces.events.EventDriven;
 import org.openspaces.events.EventTemplate;
 import org.openspaces.events.adapter.SpaceDataEvent;
 import org.openspaces.events.polling.Polling;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
@@ -19,6 +21,8 @@ import java.math.BigDecimal;
 public class Processor {
   @Autowired
   AccountDataService service;
+
+  Logger logger = LoggerFactory.getLogger(this.getClass());
 
   private final static BigDecimal NEGATIVE_ONE = new BigDecimal("-1");
 
@@ -33,6 +37,9 @@ public class Processor {
     if (data == null) {
       event.setStatus(Status.ACCOUNT_NOT_FOUND);
       // early exit, bad account managed to get in
+      if (logger.isInfoEnabled()) {
+        logger.info("Order processed: " + event);
+      }
       return event;
     }
     BigDecimal change = event.getPrice().multiply(event.getOperation().equals(Operation.BUY)
@@ -42,7 +49,13 @@ public class Processor {
     } else {
       data.setBalance(data.getBalance().add(change));
       event.setStatus(Status.PROCESSED);
+      if (logger.isInfoEnabled()) {
+        logger.info("Account changed: " + data);
+      }
       service.save(data);
+    }
+    if (logger.isInfoEnabled()) {
+      logger.info("Order processed: " + event);
     }
     return event;
   }
