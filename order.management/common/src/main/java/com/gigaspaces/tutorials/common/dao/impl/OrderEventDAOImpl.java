@@ -1,4 +1,4 @@
-package com.gigaspaces.tutorials.common.dao.gigaspaces;
+package com.gigaspaces.tutorials.common.dao.impl;
 
 import com.gigaspaces.tutorials.common.dao.AbstractDAO;
 import com.gigaspaces.tutorials.common.dao.OrderEventDAO;

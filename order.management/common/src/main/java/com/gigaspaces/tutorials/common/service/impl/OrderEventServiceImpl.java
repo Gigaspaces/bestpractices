@@ -13,6 +13,6 @@ public class OrderEventServiceImpl implements OrderEventService {
 
   @Override
   public void post(OrderEvent orderEvent) {
-    dao.push(orderEvent);
+    dao.write(orderEvent);
   }
 }

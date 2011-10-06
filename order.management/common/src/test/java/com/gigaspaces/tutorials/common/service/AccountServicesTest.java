@@ -18,7 +18,7 @@ public class AccountServicesTest extends AbstractTestNGSpringContextTests {
   @Test
   public void testAccountService() {
     AccountData data = new AccountDataBuilder()
-                       .id("1234")
+                       .username("1234")
                        .balance("123")
                        .build();
     service.save(data);

@@ -13,7 +13,7 @@ public class AccountDataServiceImpl implements AccountDataService {
 
   @Override
   public boolean accountExists(String userName) {
-    return dao.readById(userName)!=null;
+    return dao.readById(userName) != null;
   }
 
   @Override
@@ -23,12 +23,13 @@ public class AccountDataServiceImpl implements AccountDataService {
 
   /**
    * Destructive read for account with matching userName
+   *
    * @param userName the username (account id)
-   * @param timeout number of ms to wait
+   * @param timeout  number of ms to wait
    * @return a matching account, or null if not found
    */
   @Override
   public AccountData load(String userName, int timeout) {
-    return dao.pollById(userName, timeout);
+    return dao.takeById(userName, timeout);
   }
 }

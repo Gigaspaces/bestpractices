@@ -1,24 +1,42 @@
 package com.gigaspaces.tutorials.common.model;
 
 import com.gigaspaces.annotation.pojo.SpaceClass;
+import com.gigaspaces.annotation.pojo.SpaceId;
+import com.gigaspaces.annotation.pojo.SpaceProperty;
 import com.gigaspaces.annotation.pojo.SpaceRouting;
 
 import javax.persistence.Column;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.Id;
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 @SpaceClass
-public class OrderEvent extends BaseEntity {
-  Operation operation;
-  Status status;
-  String userName;
-  BigDecimal price;
+public class OrderEvent implements Serializable {
+  private String id;
+  private Operation operation;
+  private Status status;
+  private String userName;
+  private BigDecimal price;
+
+  static final long serialVersionUID = 812753L;
 
   public OrderEvent() {
   }
 
+  @SpaceId
+  @Id
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
+
   @Enumerated(value = EnumType.STRING)
+  @SpaceProperty
   public Operation getOperation() {
     return operation;
   }
@@ -38,6 +56,7 @@ public class OrderEvent extends BaseEntity {
   }
 
   @Column
+  @SpaceProperty
   public BigDecimal getPrice() {
     return price;
   }
@@ -47,6 +66,7 @@ public class OrderEvent extends BaseEntity {
   }
 
   @Enumerated(value = EnumType.STRING)
+  @SpaceProperty
   public Status getStatus() {
     return status;
   }

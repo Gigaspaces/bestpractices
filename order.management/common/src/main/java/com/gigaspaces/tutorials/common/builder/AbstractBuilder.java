@@ -1,13 +1,13 @@
 package com.gigaspaces.tutorials.common.builder;
 
-import com.gigaspaces.tutorials.common.model.BaseEntity;
-
+import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 
-public class AbstractBuilder<T extends BaseEntity> implements Builder<T> {
+public class AbstractBuilder<T extends Serializable> implements Builder<T> {
   protected Class<T> persistentClass;
   protected T instance;
 
+  @SuppressWarnings({"unchecked"})
   public AbstractBuilder() {
     this.persistentClass = (Class<T>) ((ParameterizedType) getClass()
                                                            .getGenericSuperclass()).getActualTypeArguments()[0];

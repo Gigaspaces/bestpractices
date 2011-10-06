@@ -1,7 +1,6 @@
 package com.gigaspaces.tutorials.processor;
 
 import com.gigaspaces.tutorials.common.builder.OrderEventBuilder;
-import com.gigaspaces.tutorials.common.model.AccountData;
 import com.gigaspaces.tutorials.common.model.OrderEvent;
 import com.gigaspaces.tutorials.common.model.Status;
 import com.gigaspaces.tutorials.common.service.AccountDataService;

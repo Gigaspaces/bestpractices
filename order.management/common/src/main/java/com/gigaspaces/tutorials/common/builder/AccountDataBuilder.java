@@ -5,7 +5,7 @@ import com.gigaspaces.tutorials.common.model.AccountData;
 import java.math.BigDecimal;
 
 public class AccountDataBuilder extends AbstractBuilder<AccountData> {
-  AccountDataBuilder username(String username) {
+  public AccountDataBuilder username(String username) {
     instance.setUserName(username);
     return this;
   }
@@ -25,15 +25,8 @@ public class AccountDataBuilder extends AbstractBuilder<AccountData> {
     return this;
   }
 
-  public AccountDataBuilder id(String id) {
-    instance.setId(id);
-    return this;
-  }
-
-
   AccountDataBuilder balance(BigDecimal balance) {
     instance.setBalance(balance);
     return this;
   }
-
 }

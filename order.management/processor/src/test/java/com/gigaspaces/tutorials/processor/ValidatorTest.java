@@ -1,8 +1,6 @@
 package com.gigaspaces.tutorials.processor;
 
-import com.gigaspaces.tutorials.common.builder.AccountDataBuilder;
 import com.gigaspaces.tutorials.common.builder.OrderEventBuilder;
-import com.gigaspaces.tutorials.common.dao.AccountDataDAO;
 import com.gigaspaces.tutorials.common.model.Operation;
 import com.gigaspaces.tutorials.common.model.OrderEvent;
 import com.gigaspaces.tutorials.common.model.Status;
@@ -17,7 +15,7 @@ import static org.testng.Assert.assertNull;
 public class ValidatorTest {
   @Test
   public void testValidator() {
-    AccountDataService service=mock(AccountDataService.class);
+    AccountDataService service = mock(AccountDataService.class);
 
     when(service.accountExists("1234")).thenReturn(true);
 

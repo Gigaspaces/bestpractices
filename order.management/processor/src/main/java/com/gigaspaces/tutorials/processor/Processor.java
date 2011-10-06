@@ -1,7 +1,6 @@
 package com.gigaspaces.tutorials.processor;
 
 import com.gigaspaces.tutorials.common.builder.OrderEventBuilder;
-import com.gigaspaces.tutorials.common.dao.AccountDataDAO;
 import com.gigaspaces.tutorials.common.model.AccountData;
 import com.gigaspaces.tutorials.common.model.Operation;
 import com.gigaspaces.tutorials.common.model.OrderEvent;
@@ -38,7 +37,7 @@ public class Processor {
     }
     BigDecimal change = event.getPrice().multiply(event.getOperation().equals(Operation.BUY)
                                                   ? NEGATIVE_ONE : BigDecimal.ONE);
-    if(data.getBalance().add(change).compareTo(BigDecimal.ZERO)==-1) {
+    if (data.getBalance().add(change).compareTo(BigDecimal.ZERO) == -1) {
       event.setStatus(Status.INSUFFICIENT_FUNDS);
     } else {
       data.setBalance(data.getBalance().add(change));

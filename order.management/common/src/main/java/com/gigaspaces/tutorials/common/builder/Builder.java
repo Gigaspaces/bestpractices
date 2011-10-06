@@ -1,7 +1,7 @@
 package com.gigaspaces.tutorials.common.builder;
 
-import com.gigaspaces.tutorials.common.model.BaseEntity;
+import java.io.Serializable;
 
-public interface Builder<T extends BaseEntity> {
+public interface Builder<T extends Serializable> {
   T build();
 }
