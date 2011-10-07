@@ -1,6 +1,7 @@
 package com.gigaspaces.tutorials.common.dao;
 
 import com.gigaspaces.query.IdQuery;
+import com.j_spaces.core.client.SQLQuery;
 import org.openspaces.core.GigaSpace;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -32,5 +33,11 @@ public class AbstractDAO<T extends Serializable> implements DAO<T> {
   @Override
   public T takeById(String id, long timeout) {
     return space.takeById(new IdQuery<T>(persistentClass, id), timeout);
+  }
+
+  @Override
+  public T[] readMultiple(T template) {
+    SQLQuery<T> query = new SQLQuery<T>(persistentClass, "");
+    return space.readMultiple(query, Integer.MAX_VALUE);
   }
 }

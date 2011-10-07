@@ -15,4 +15,9 @@ public class OrderEventServiceImpl implements OrderEventService {
   public void post(OrderEvent orderEvent) {
     dao.write(orderEvent);
   }
+
+  @Override
+  public OrderEvent[] getAllOrderEvents() {
+    return dao.readMultiple(new OrderEvent());
+  }
 }

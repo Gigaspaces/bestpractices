@@ -96,7 +96,7 @@ public class Feeder implements InitializingBean, DisposableBean {
         OrderEvent orderEvent = new OrderEventBuilder()
                                 .id(UUID.randomUUID().toString())
                                 .username("USER " + randomGen.nextInt(accounts + 1))
-                                .price(100)
+                                .price(50 + randomGen.nextInt(100))
                                 .operation(randomOrderOperation())
                                 .status(Status.NEW)
                                 .build();

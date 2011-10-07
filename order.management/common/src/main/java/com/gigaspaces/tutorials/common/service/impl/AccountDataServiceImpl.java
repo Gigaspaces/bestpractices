@@ -32,4 +32,9 @@ public class AccountDataServiceImpl implements AccountDataService {
   public AccountData load(String userName, int timeout) {
     return dao.takeById(userName, timeout);
   }
+
+  @Override
+  public AccountData[] getAllAccountData() {
+    return dao.readMultiple(new AccountData());
+  }
 }

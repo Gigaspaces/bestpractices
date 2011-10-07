@@ -8,4 +8,6 @@ public interface AccountDataService {
   void save(AccountData data);
 
   AccountData load(String userName, int timeout);
+
+  AccountData[] getAllAccountData();
 }
