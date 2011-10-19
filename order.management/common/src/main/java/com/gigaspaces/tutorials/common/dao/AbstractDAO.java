@@ -40,4 +40,15 @@ public class AbstractDAO<T extends Serializable> implements DAO<T> {
     SQLQuery<T> query = new SQLQuery<T>(persistentClass, "");
     return space.readMultiple(query, Integer.MAX_VALUE);
   }
+
+  @Override
+  public T[] readMultiple(String query) {
+    SQLQuery<T> sqlQuery = new SQLQuery<T>(persistentClass, query);
+    return space.readMultiple(sqlQuery);
+  }
+
+  @Override
+  public T read(T template, int timeout) {
+    return space.read(template, timeout);
+  }
 }

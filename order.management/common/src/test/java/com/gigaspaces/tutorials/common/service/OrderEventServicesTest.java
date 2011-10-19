@@ -11,6 +11,7 @@ import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 
 @ContextConfiguration
 public class OrderEventServicesTest extends AbstractTestNGSpringContextTests {
@@ -29,7 +30,8 @@ public class OrderEventServicesTest extends AbstractTestNGSpringContextTests {
                        .price("100")
                        .build();
     service.post(event);
-    OrderEvent e=dao.readById("1234");
+    OrderEvent e = dao.readById("1234");
     assertEquals(event, e);
+    assertNotNull(event.getLastUpdateTime());
   }
 }

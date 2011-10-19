@@ -18,6 +18,6 @@ public class OrderEventServiceImpl implements OrderEventService {
 
   @Override
   public OrderEvent[] getAllOrderEvents() {
-    return dao.readMultiple(new OrderEvent());
+    return dao.readMultiple("order by lastUpdateTime");
   }
 }

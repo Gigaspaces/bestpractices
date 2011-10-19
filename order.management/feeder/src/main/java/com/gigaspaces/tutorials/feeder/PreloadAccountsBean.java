@@ -19,7 +19,7 @@ public class PreloadAccountsBean {
       if (!service.accountExists("USER " + i)) {
         AccountData account = new AccountDataBuilder()
                               .username("USER " + i)
-                              .balance(1000)
+                              .balance(100)
                               .build();
         service.save(account);
       }

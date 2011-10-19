@@ -35,6 +35,6 @@ public class AccountDataServiceImpl implements AccountDataService {
 
   @Override
   public AccountData[] getAllAccountData() {
-    return dao.readMultiple(new AccountData());
+    return dao.readMultiple("order by username");
   }
 }

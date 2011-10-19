@@ -10,4 +10,8 @@ public interface DAO<T extends Serializable> {
   T takeById(String id, long timeout);
 
   T[] readMultiple(T template);
+
+  T[] readMultiple(String query);
+
+  T read(T template, int timeout);
 }

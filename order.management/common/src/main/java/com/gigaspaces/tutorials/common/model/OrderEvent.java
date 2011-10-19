@@ -1,14 +1,9 @@
 package com.gigaspaces.tutorials.common.model;
 
-import com.gigaspaces.annotation.pojo.SpaceClass;
-import com.gigaspaces.annotation.pojo.SpaceId;
-import com.gigaspaces.annotation.pojo.SpaceProperty;
-import com.gigaspaces.annotation.pojo.SpaceRouting;
+import com.gigaspaces.annotation.pojo.*;
+import com.gigaspaces.metadata.index.SpaceIndexType;
 
-import javax.persistence.Column;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -19,10 +14,21 @@ public class OrderEvent implements Serializable {
   private Status status;
   private String userName;
   private BigDecimal price;
+  private Long lastUpdateTime;
 
   static final long serialVersionUID = 812753L;
 
   public OrderEvent() {
+  }
+
+  @SpaceProperty
+  @SpaceIndex(type = SpaceIndexType.BASIC)
+  public Long getLastUpdateTime() {
+    return lastUpdateTime;
+  }
+
+  public void setLastUpdateTime(Long lastUpdateTime) {
+    this.lastUpdateTime = lastUpdateTime;
   }
 
   @SpaceId(autoGenerate = true)
@@ -79,11 +85,12 @@ public class OrderEvent implements Serializable {
   public String toString() {
     final StringBuilder sb = new StringBuilder();
     sb.append("OrderEvent");
-    sb.append("{operation=").append(operation);
+    sb.append("{id='").append(id).append('\'');
+    sb.append(", operation=").append(operation);
     sb.append(", status=").append(status);
-    sb.append(", id='").append(id).append('\'');
     sb.append(", userName='").append(userName).append('\'');
     sb.append(", price=").append(price);
+    sb.append(", lastUpdateTime=").append(lastUpdateTime);
     sb.append('}');
     return sb.toString();
   }
@@ -126,5 +133,10 @@ public class OrderEvent implements Serializable {
     result = 31 * result + (userName != null ? userName.hashCode() : 0);
     result = 31 * result + (price != null ? price.hashCode() : 0);
     return result;
+  }
+
+  @PrePersist
+  public void updateTime() {
+
   }
 }
