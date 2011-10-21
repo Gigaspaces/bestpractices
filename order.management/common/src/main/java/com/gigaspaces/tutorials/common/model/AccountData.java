@@ -2,22 +2,19 @@ package com.gigaspaces.tutorials.common.model;
 
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceId;
+import com.gigaspaces.annotation.pojo.SpaceProperty;
 import com.gigaspaces.annotation.pojo.SpaceRouting;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
 @SpaceClass
-@Entity
 public class AccountData implements Serializable {
   String userName;
   BigDecimal balance;
   static final long serialVersionUID = 162512L;
 
-  @Column
+  @SpaceProperty
   public BigDecimal getBalance() {
     return balance;
   }
@@ -27,9 +24,7 @@ public class AccountData implements Serializable {
   }
 
   @SpaceRouting
-  @Id
   @SpaceId
-  @Column
   public String getUserName() {
     return userName;
   }

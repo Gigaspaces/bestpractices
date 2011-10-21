@@ -26,61 +26,15 @@
     <os-core:giga-space-context/>
 
     <!--
-        A JDBC pooled data source that connects to the HSQL server the mirror starts.
-    -->
-    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
-        <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
-        <property name="url" value="jdbc:hsqldb:hsql://localhost/testDB"/>
-        <property name="username" value="sa"/>
-        <property name="password" value=""/>
-    </bean>
-
-    <!--
-        Hibernate SessionFactory bean. Uses the pooled data source to connect to the database.
-    -->
-    <bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
-        <property name="dataSource" ref="dataSource"/>
-        <property name="annotatedClasses">
-            <list>
-                <value>com.gigaspaces.tutorials.common.model.AccountData</value>
-                <value>com.gigaspaces.tutorials.common.model.OrderEvent</value>
-            </list>
-        </property>
-        <property name="hibernateProperties">
-            <props>
-                <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
-                <prop key="hibernate.cache.provider_class">org.hibernate.cache.NoCacheProvider</prop>
-                <prop key="hibernate.cache.use_second_level_cache">false</prop>
-                <prop key="hibernate.cache.use_query_cache">false</prop>
-            </props>
-        </property>
-    </bean>
-
-    <bean id="hibernateDataSource" class="org.openspaces.persistency.hibernate.DefaultHibernateExternalDataSource">
-        <property name="sessionFactory" ref="sessionFactory"/>
-    </bean>
-
-    <!--
         A bean representing a space (an IJSpace implementation).
 
-        Note, we do not specify here the cluster topology of the space. It is declated outside of
+        Note, we do not specify here the cluster topology of the space. It is declared outside of
         the processing unit or within the SLA bean.
 
         The space is configured to connect to a mirror, and uses the configured external data source
         to perform the initial load operation from the database when the Space starts up.
     -->
-    <os-core:space id="space" url="/./orderManagement" schema="persistent" mirror="true"
-                   external-data-source="hibernateDataSource">
-        <os-core:properties>
-            <props>
-                <!-- Use ALL IN CACHE -->
-                <prop key="space-config.engine.cache_policy">1</prop>
-                <prop key="space-config.external-data-source.usage">read-only</prop>
-                <prop key="cluster-config.cache-loader.external-data-source">true</prop>
-                <prop key="cluster-config.cache-loader.central-data-source">true</prop>
-            </props>
-        </os-core:properties>
-    </os-core:space>
+    <os-core:space id="space" url="/./orderManagement"/>
 
     <!--
         Defines a distributed transaction manager.
@@ -91,9 +45,4 @@
         OpenSpaces simplified space API built on top of IJSpace/JavaSpace.
     -->
     <os-core:giga-space id="gigaSpace" space="space" tx-manager="transactionManager"/>
-
-    <!--
-        The data processor bean
-    -->
-    <bean id="dataProcessor" class="com.gigaspaces.tutorials.processor.Processor"/>
 </beans>

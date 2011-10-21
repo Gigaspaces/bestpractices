@@ -3,7 +3,6 @@ package com.gigaspaces.tutorials.common.model;
 import com.gigaspaces.annotation.pojo.*;
 import com.gigaspaces.metadata.index.SpaceIndexType;
 
-import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -32,7 +31,6 @@ public class OrderEvent implements Serializable {
   }
 
   @SpaceId(autoGenerate = true)
-  @Id
   public String getId() {
     return id;
   }
@@ -41,7 +39,6 @@ public class OrderEvent implements Serializable {
     this.id = id;
   }
 
-  @Enumerated(value = EnumType.STRING)
   @SpaceProperty
   public Operation getOperation() {
     return operation;
@@ -52,7 +49,6 @@ public class OrderEvent implements Serializable {
   }
 
   @SpaceRouting
-  @Column
   public String getUserName() {
     return userName;
   }
@@ -61,7 +57,6 @@ public class OrderEvent implements Serializable {
     this.userName = userName;
   }
 
-  @Column
   @SpaceProperty
   public BigDecimal getPrice() {
     return price;
@@ -71,7 +66,6 @@ public class OrderEvent implements Serializable {
     this.price = price;
   }
 
-  @Enumerated(value = EnumType.STRING)
   @SpaceProperty
   public Status getStatus() {
     return status;
@@ -133,10 +127,5 @@ public class OrderEvent implements Serializable {
     result = 31 * result + (userName != null ? userName.hashCode() : 0);
     result = 31 * result + (price != null ? price.hashCode() : 0);
     return result;
-  }
-
-  @PrePersist
-  public void updateTime() {
-
   }
 }
