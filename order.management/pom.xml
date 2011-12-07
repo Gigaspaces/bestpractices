@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <gsVersion>8.0.4</gsVersion>
+        <gsVersion>8.0.5-m3</gsVersion>
         <springVersion>3.0.5.RELEASE</springVersion>
     </properties>
 
