@@ -1,0 +1,188 @@
+<?xml version="1.0"?>
+<!-- standard include for process metrics -->
+<!DOCTYPE plugin [
+  <!ENTITY process-metrics SYSTEM "/pdk/plugins/process-metrics.xml">
+]>
+<plugin name="gigaspaces" package="org.openspaces.monitor.hyperic">
+	<property name="PLUGIN_VERSION" value="0.20-SNAPSHOT" />
+
+	<classpath>
+		<include name="pdk/lib/commons-logging.jar" />
+		<include name="pdk/lib/hyperic-util.jar" />
+		<include name="pdk/lib/sigar.jar" />
+
+		<include name="pdk/lib/gs/com.springsource.org.aopalliance-1.0.0.jar" />
+		<include name="pdk/lib/gs/commons-logging.jar" />
+		<include name="pdk/lib/gs/gs-openspaces.jar" />
+		<include name="pdk/lib/gs/gs-runtime.jar" />
+		<include name="pdk/lib/gs/org.springframework.aop-3.0.5.RELEASE.jar" />
+		<include name="pdk/lib/gs/org.springframework.asm-3.0.5.RELEASE.jar" />
+		<include name="pdk/lib/gs/org.springframework.aspects-3.0.5.RELEASE.jar" />
+		<include name="pdk/lib/gs/org.springframework.beans-3.0.5.RELEASE.jar" />
+		<include name="pdk/lib/gs/org.springframework.context-3.0.5.RELEASE.jar" />
+		<include
+			name="pdk/lib/gs/org.springframework.context.support-3.0.5.RELEASE.jar" />
+		<include name="pdk/lib/gs/org.springframework.core-3.0.5.RELEASE.jar" />
+		<include name="pdk/lib/gs/org.springframework.expression-3.0.5.RELEASE.jar" />
+		<include
+			name="pdk/lib/gs/org.springframework.transaction-3.0.5.RELEASE.jar" />
+	</classpath>
+
+	<help name="GigaSpaces XAP">
+    <![CDATA[
+    <h2>Configure GigaSpaces  for Monitoring</h2>
+    <p>
+    GigaSpaces monitoring is done through the GS Admin API.
+    </p>
+    <p>
+    If your space is secured you'll have to provide the correct user and password to let Hyperic access monitoring informations.
+    </p>
+        ]]>
+	</help>
+
+	<config name="connection">
+		<option name="connection.locators" description="GigaSpaces lookup locators"
+			optional="true" default="localhost" />
+		<option name="connection.groups" description="GigaSpaces lookup groups."
+			optional="true" default="" />
+		<option name="connection.user" description="Admin API username"
+			optional="true" default="" />
+		<option name="connection.password" description="Admin API password"
+			optional="true" default="" />
+	</config>
+	<property name="CONNCFG"
+		value="connection.locators=%connection.locators%,connection.groups=%connection.groups%,connection.user=%connection.user%,connection.password=%connection.password%" />
+
+	<platform name="GigaSpaces XAP Grid">
+		<plugin type="autoinventory"
+			class="org.openspaces.monitor.hyperic.GigaSpacesPlatformDetector" />
+		<plugin type="measurement" class="org.hyperic.hq.product.MeasurementPlugin" />
+		<plugin type="collector"
+			class="org.openspaces.monitor.hyperic.GigaSpacesPlatformCollector" />
+
+		<config include="connection" />
+		<filter name="template" value="GigaSpaces:${CONNCFG}:${alias}" />
+
+		<metrics>
+			<metric name="Availability" indicator="true" />
+			<metric name="GSA" alias="gsa_count" indicator="true" />
+			<metric name="LUS" alias="lus_count" indicator="true" />
+			<metric name="GSM" alias="gsm_count" indicator="true" />
+			<metric name="GSC" alias="gsc_count" indicator="true" />
+		</metrics>
+
+		<server name="GigaSpaces" version="8.0.x" description="Gigaspaces XAP">
+			<plugin type="autoinventory" class="GigaSpacesServicesDetector" />
+			<plugin type="measurement" class="org.hyperic.hq.product.MeasurementPlugin" />
+			<plugin type="collector" class="GigaSpacesPlatformCollector" />
+
+			<config include="connection" />
+			<filter name="template" value="GigaSpaces:${CONNCFG}:${alias}" />
+
+			<metrics>
+				<metric name="Availability" indicator="true" />
+				<metric name="GSA" alias="gsa_count" indicator="true" />
+				<metric name="LUS" alias="lus_count" indicator="true" />
+				<metric name="GSM" alias="gsm_count" indicator="true" />
+				<metric name="GSC" alias="gsc_count" indicator="true" />
+			</metrics>
+			<service name="GSA">
+				<plugin type="measurement" class="org.hyperic.hq.product.MeasurementPlugin" />
+				<plugin type="collector" class="GridComponentCollector" />
+				<config type="measurement" include="connection">
+					<option name="grid.type" description="type" />
+					<option name="grid.host" description="host" />
+				</config>
+				<properties>
+					<property description="zone" name="zones" />
+				</properties>
+				<filter name="template"
+					value="GigaSpaces:${CONNCFG},grid.type=%grid.type%,grid.host=%grid.host%:${alias}" />
+				<metrics>
+					<metric name="Availability" indicator="true" />
+					<metric name="Used Heap" alias="used_memory" indicator="true"
+						units="percentage" />
+					<metric name="Used CPU" alias="used_cpu" indicator="true"
+						units="percentage" />
+				</metrics>
+			</service>
+			<service name="GSM">
+				<plugin type="measurement" class="org.hyperic.hq.product.MeasurementPlugin" />
+				<plugin type="collector" class="GridComponentCollector" />
+				<config type="measurement">
+					<option name="grid.type" description="type" />
+					<option name="grid.host" description="host" />
+				</config>
+				<properties>
+					<property description="zone" name="zones" />
+				</properties>
+				<filter name="template"
+					value="GigaSpaces:${CONNCFG},grid.type=%grid.type%,grid.host=%grid.host%:${alias}" />
+				<metrics>
+					<metric name="Availability" indicator="true" />
+					<metric name="Used Heap" alias="used_memory" indicator="true"
+						units="percentage" />
+					<metric name="Used CPU" alias="used_cpu" indicator="true"
+						units="percentage" />
+				</metrics>
+			</service>
+			<service name="GSC">
+				<plugin type="measurement" class="org.hyperic.hq.product.MeasurementPlugin" />
+				<plugin type="collector" class="GridComponentCollector" />
+				<config type="measurement">
+					<option name="grid.type" description="type" />
+					<option name="grid.agentId" description="Agent id" />
+					<option name="grid.host" description="host" />
+				</config>
+				<properties>
+					<property description="zone" name="zones" />
+				</properties>
+				<filter name="template"
+					value="GigaSpaces:${CONNCFG},grid.type=%grid.type%,grid.agentId=%grid.agentId%,grid.host=%grid.host%:${alias}" />
+				<metrics>
+					<metric name="Availability" indicator="true" />
+					<metric name="Used Heap" alias="used_memory" indicator="true"
+						units="percentage" />
+					<metric name="Used CPU" alias="used_cpu" indicator="true"
+						units="percentage" />
+				</metrics>
+			</service>
+			<service name="PU">
+				<plugin type="measurement" class="org.hyperic.hq.product.MeasurementPlugin" />
+				<plugin type="collector" class="PUCollector" />
+				<config type="measurement">
+					<option name="pu.name" description="Processing unit name" />
+				</config>
+				<filter name="template"
+					value="GigaSpaces:${CONNCFG},pu.name=%pu.name%:${alias}" />
+				<metrics>
+					<metric name="Availability" indicator="true" />
+					<metric
+						name="Status: 0 NA or UNDEPLOYED, 1 SCHEDULED, 2 DEPLOYED, 3 BROKEN, 4 COMPROMISED, 5 INTACT"
+						alias="status" indicator="true" />
+					<metric name="Nb instances " alias="nb_instances" indicator="true" />
+				</metrics>
+			</service>
+			<service name="SPACE">
+				<plugin type="measurement" class="org.hyperic.hq.product.MeasurementPlugin" />
+				<plugin type="collector" class="SpaceCollector" />
+				<config type="measurement">
+					<option name="space.name" description="Space name" />
+				</config>
+				<filter name="template"
+					value="GigaSpaces:${CONNCFG},space.name=%space.name%:${alias}" />
+				<metrics>
+					<metric name="Availability" indicator="true" />
+					<metric name="Nb instances" alias="nb_instances" indicator="true" />
+					<metric name="Nb backups" alias="nb_backups" indicator="true" />
+					<metric name="Read" alias="nb_read" category="THROUGHPUT" collectionType="trendsup" />
+					<metric name="Write" alias="nb_write" category="THROUGHPUT" collectionType="trendsup" />
+					<metric name="Update" alias="nb_update" category="THROUGHPUT" collectionType="trendsup" />
+					<metric name="Take" alias="nb_take" category="THROUGHPUT" collectionType="trendsup" />
+					<metric name="Execute" alias="nb_execute" category="THROUGHPUT" collectionType="trendsup" />
+					<metric name="Remove" alias="nb_remove" category="THROUGHPUT" collectionType="trendsup" />
+				</metrics>
+			</service>
+		</server>
+	</platform>
+</plugin>
