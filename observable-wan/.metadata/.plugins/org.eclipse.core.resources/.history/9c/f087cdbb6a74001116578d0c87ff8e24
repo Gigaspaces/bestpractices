@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:context="http://www.springframework.org/schema/context"      
+      xmlns:os-core="http://www.openspaces.org/schema/core"
+      xmlns:os-events="http://www.openspaces.org/schema/events"
+      xmlns:tx="http://www.springframework.org/schema/tx"             
+      xmlns:os-remoting="http://www.openspaces.org/schema/remoting"
+      xmlns:os-sla="http://www.openspaces.org/schema/sla"
+	  xmlns:os-gateway="http://www.openspaces.org/schema/core/gateway"      
+      xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+      http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+      http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd        
+      http://www.openspaces.org/schema/core http://www.openspaces.org/schema/core/openspaces-core.xsd
+      http://www.openspaces.org/schema/events http://www.openspaces.org/schema/events/openspaces-events.xsd
+      http://www.openspaces.org/schema/remoting http://www.openspaces.org/schema/remoting/openspaces-remoting.xsd
+	  http://www.openspaces.org/schema/core/gateway http://www.openspaces.org/schema/8.0/core/gateway/openspaces-gateway.xsd      
+      http://www.openspaces.org/schema/sla http://www.openspaces.org/schema/sla/openspaces-sla.xsd">
+         
+ 	<os-core:annotation-support />
+	<context:component-scan base-package="com.gigaspaces"/>
+	<os-events:annotation-support />
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+	
+ 	<bean id="propertiesConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+ 	</bean>
+	
+	<bean id="outfilter" class="com.gigaspaces.server.OutboundReplicationFilter"/>
+	<bean id="spaceFilter" class="com.gigaspaces.server.SpaceFilter">
+		<property name="location" value="site2"/>
+	</bean>
+    <os-sla:sla cluster-schema="partitioned-sync2backup" 
+            number-of-instances="1" number-of-backups="0"/>	
+	<os-core:space id="space" url="/./site2space" gateway-targets="gatewayTargets">
+		<os-core:annotation-adapter-filter priority="2">
+			<os-core:filter ref="spaceFilter"/>
+		</os-core:annotation-adapter-filter>
+ 		<os-core:space-replication-filter>
+			<os-core:output-filter ref="outfilter"/>
+		</os-core:space-replication-filter>
+	</os-core:space>
+	<os-gateway:targets id="gatewayTargets" local-gateway-name="SITE2">
+  		<os-gateway:target name="SITE1"/>    	    	        	        
+	</os-gateway:targets>
+	<os-core:local-tx-manager id="transactionManager" space="space" default-timeout="5000" />
+	<os-core:giga-space id="gigaSpace" space="space" tx-manager="transactionManager"/>
+	
+	<bean name="time-watcher" class="com.gigaspaces.server.TimeWatcher" init-method="init" destroy-method="finished">
+		<property name="space" ref="gigaSpace"/>
+		<property name="location" value="nj"/>
+	</bean>
+	
+	<bean name="replication-monitor" class="com.gigaspaces.server.ReplicationMonitor" init-method="init" destroy-method="stop">
+		<property name="space" ref="gigaSpace"/>
+		<property name="timestampRate" value="1000"/>
+		<property name="degradedLatencyThreshold" value="3000"/>
+		<property name="downLatencyThreshold" value="10000"/>
+		<property name="location" value="nj"/>
+	</bean>
+</beans>

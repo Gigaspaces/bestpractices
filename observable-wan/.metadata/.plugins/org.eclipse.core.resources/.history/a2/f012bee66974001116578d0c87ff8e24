@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:os-gateway="http://www.openspaces.org/schema/core/gateway"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.openspaces.org/schema/core/gateway
+       http://www.openspaces.org/schema/8.0/core/gateway/openspaces-gateway.xsd">
+
+ 	<bean id="propertiesConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+      <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"/>
+      <property name="properties">
+      	<props>
+      		<prop key="site1-host">localhost</prop>
+      		<prop key="site2-host">localhost</prop>
+      	</props>
+      </property>      
+ 	</bean>
+
+    <os-gateway:sink id="sink" local-gateway-name="SITE2ACCT" gateway-lookups="gatewayLookups"
+                     local-space-url="jini://*/*/njacctspace">
+        <os-gateway:sources>
+            <os-gateway:source name="NYACCT"/>
+        </os-gateway:sources>
+    </os-gateway:sink>
+
+    <os-gateway:lookups id="gatewayLookups">
+        <os-gateway:lookup gateway-name="NYACCT" host="${site1-host}" discovery-port="10868" communication-port="7100"/>
+        <os-gateway:lookup gateway-name="NJACCT" host="${site2-host}" discovery-port="10869" communication-port="8100"/>
+    </os-gateway:lookups>
+
+
+</beans>
+
+

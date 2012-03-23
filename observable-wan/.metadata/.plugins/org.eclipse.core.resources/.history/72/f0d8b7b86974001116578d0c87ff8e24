@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:os-gateway="http://www.openspaces.org/schema/core/gateway"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.openspaces.org/schema/core/gateway
+       http://www.openspaces.org/schema/8.0/core/gateway/openspaces-gateway.xsd">
+       
+ 	<bean id="propertiesConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+      <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"/>
+      <property name="properties">
+      	<props>
+      		<prop key="ny-host">localhost</prop>
+      		<prop key="nj-host">localhost</prop>
+      	</props>
+      </property>
+ 	</bean>
+       
+
+    <os-gateway:delegator id="delegator" local-gateway-name="NYACCT" gateway-lookups="gatewayLookups">
+        <os-gateway:delegation target="NJACCT"/>
+    </os-gateway:delegator>
+
+    <os-gateway:lookups id="gatewayLookups">
+        <os-gateway:lookup gateway-name="NYACCT" host="${ny-host}" discovery-port="10868" communication-port="7100"/>
+        <os-gateway:lookup gateway-name="NJACCT" host="${nj-host}" discovery-port="10869" communication-port="8100"/>
+    </os-gateway:lookups>
+
+</beans>
+
+

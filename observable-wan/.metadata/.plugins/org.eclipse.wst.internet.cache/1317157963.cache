@@ -1,0 +1,946 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<xsd:schema xmlns="http://www.openspaces.org/schema/events"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:beans="http://www.springframework.org/schema/beans"
+            xmlns:tool="http://www.springframework.org/schema/tool"
+            xmlns:os-core="http://www.openspaces.org/schema/core"
+            targetNamespace="http://www.openspaces.org/schema/events"
+            elementFormDefault="qualified"
+            attributeFormDefault="unqualified">
+
+    <xsd:import namespace="http://www.springframework.org/schema/beans"/>
+    <xsd:import namespace="http://www.springframework.org/schema/tool"/>
+    <xsd:import namespace="http://www.openspaces.org/schema/core"/>
+
+    <xsd:element name="annotation-support">
+        <xsd:annotation>
+            <xsd:documentation>
+                Allows to use different annotation based injection and configuration associated with event container.
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="polling-container">
+        <xsd:annotation>
+            <xsd:documentation source="java:org.openspaces.events.polling.SimplePollingEventListenerContainer">
+                An event container that performs polling receive operation (for example blocking take) at a constant
+                interval based on a given template and invokes a custom listener.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="baseEventContainer">
+                    <xsd:choice minOccurs="1" maxOccurs="unbounded">
+                        <xsd:element name="tx-support" type="txEventSupport" minOccurs="0" maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    Configures the polling container to work under a transaction. The transaction
+                                    manager will be used to start and commit (on success) or rollback (on failure) a
+                                    transaction.
+
+                                    The scope of the started transaction is the receive operation and the even listener
+                                    invocation. The trigger receive operation is executed before the transaction is
+                                    started.
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element name="trigger-operation-handler" type="triggerOperationHandlerType" minOccurs="0"
+                                     maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:documentation
+                                        source="java:org.openspaces.events.polling.trigger.TriggerOperationHandler">
+                                    The trigger operation handler (if set) is called before a tranasction is started,
+                                    and only if it returns a non null value, the transaction + receive operation + event
+                                    invocation will be performed.
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element name="receive-operation-handler" type="receiveOperationHandlerType" minOccurs="0"
+                                     maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:documentation
+                                        source="java:org.openspaces.events.polling.receive.ReceiveOperationHandler">
+                                    The receive operation handler controls the receive operation (which results in an
+                                    Object representing the event) implementation. Defaults to a Single take blocking
+                                    operation.
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element name="exception-handler" type="eventExceptionHandlerType" minOccurs="0"
+                                     maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:documentation
+                                        source="java:org.openspaces.events.EventExceptionHandler">
+                                    A handler for exceptions raised by the listener.
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:choice>
+                            <xsd:element ref="os-core:template" minOccurs="0" maxOccurs="1">
+                                <xsd:annotation>
+                                    <xsd:documentation>
+                                        The template that will be used by the receive operation handler to take/read/...
+                                        event data from the Space.
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:element>
+                            <xsd:element ref="os-core:sql-query" minOccurs="0" maxOccurs="1">
+                                <xsd:annotation>
+                                    <xsd:documentation>
+                                        A sql query that will be used by the receive operation handler to take/read/...
+                                        event data from the Space.
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:element>
+                        </xsd:choice>
+                        <xsd:element name="listener" type="spaceDataEventListenerType" minOccurs="1" maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:documentation source="java:org.openspaces.events.SpaceDataEventListener">
+                                    The Space data event listener that will be used to handle data events caused by the
+                                    receive operation handler.
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                    </xsd:choice>
+                    <xsd:attribute name="receive-timeout" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Set the timeout to use for receive calls, in milliseconds. The default is 60000 ms, that
+                                is, 1 minute.
+
+                                NOTE: This value needs to be smaller than the transaction timeout used by the
+                                transaction manager (in the appropriate unit, of course).
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="recovery-interval" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Specify the interval between recovery attempts, in milliseconds. The default is 5000 ms,
+                                that is, 5 seconds.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="concurrent-consumers" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Specify the number of concurrent consumers to create. Default is 1.
+
+                                Specifying a higher value for this setting will increase the standard level of scheduled
+                                concurrent consumers at runtime: This is effectively the minimum number of concurrent
+                                consumers which will be scheduled at any given time. This is a static setting; for
+                                dynamic scaling, consider specifying the "maxConcurrentConsumers" setting instead.
+
+                                Raising the number of concurrent consumers is recommendable in order to scale the
+                                consumption of events. However, note that any ordering guarantees are lost once multiple
+                                consumers are registered. In general, stick with 1 consumer for low-volume events.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="max-concurrent-consumers" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Specify the maximum number of concurrent consumers to create. Default is 1.
+
+                                If this setting is higher than "concurrentConsumers", the listener container will
+                                dynamically schedule new consumers at runtime, provided that enough incoming messages
+                                are encountered. Once the load goes down again, the number of consumers will be reduced
+                                to the standard level ("concurrentConsumers") again.
+
+                                Raising the number of concurrent consumers is recommendable in order to scale the
+                                consumption of events. However, note that any ordering guarantees are lost once multiple
+                                consumers are registered. In general, stick with 1 consumer for low-volume events.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="max-events-per-task" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Specify the maximum number of events to process in one task. More concretely, this
+                                limits the number of event reception attempts per task, which includes receive
+                                iterations that did not actually pick up a event until they hit their timeout (see
+                                "receiveTimeout" property).
+
+                                Default is unlimited (-1) in case of a standard TaskExecutor, and 1 in case of a
+                                SchedulingTaskExecutor that indicates a preference for short-lived tasks. Specify a
+                                number of 10 to 100 messages to balance between extremely long-lived and extremely
+                                short-lived tasks here.
+
+                                Long-lived tasks avoid frequent thread context switches through sticking with the same
+                                thread all the way through, while short-lived tasks allow thread pools to control the
+                                scheduling. Hence, thread pools will usually prefer short-lived tasks.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="idle-task-execution-limit" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Specify the limit for idle executions of a receive task, not having received any event
+                                within its execution. If this limit is reached, the task will shut down and leave
+                                receiving to other executing tasks (in case of dynamic scheduling; see the
+                                "maxConcurrentConsumers" setting). Default is 1.
+
+                                Within each task execution, a number of event reception attempts (according to the
+                                "maxEventsPerTask" setting) will each wait for an incoming event (according to the
+                                "receiveTimeout" setting). If all of those receive attempts in a given task return
+                                without an event, the task is considered idle with respect to received events. Such a
+                                task may still be rescheduled; however, once it reached the specified
+                                "idleTaskExecutionLimit", it will shut down (in case of dynamic scaling).
+
+                                Raise this limit if you encounter too frequent scaling up and down. With this limit
+                                being higher, an idle consumer will be kept around longer, avoiding the restart of a
+                                consumer once a new load of messages comes in. Alternatively, specify a higher
+                                "maxMessagePerTask" and/or "receiveTimeout" value, which will also lead to idle
+                                consumers being kept around for a longer time (while also increasing the average
+                                execution time of each scheduled task).
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="perform-snapshot" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                If set to true will perform snapshot operation on the provided template before invoking
+                                the receive operation. Defaults to true.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="pass-array-as-is" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                If set to true will pass an array value returned from a 'receiveOperationHandler'
+                                directly to the listener without "serializing" it as one array element each time.
+                                Defaults to false
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="async-polling-container">
+        <xsd:annotation>
+            <xsd:documentation
+                    source="java:org.openspaces.events.asyncpolling.SimpleAsyncPollingEventListenerContainer">
+                An event container that performs asynchronous polling receive operation (for example async take) at a
+                constant interval based on a given template and invokes a custom listener.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="baseEventContainer">
+                    <xsd:choice minOccurs="1" maxOccurs="unbounded">
+                        <xsd:element name="tx-support" type="txEventSupport" minOccurs="0" maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    Configures the polling container to work under a transaction. The transaction
+                                    manager will be used to start and commit (on success) or rollback (on failure) a
+                                    transaction.
+
+                                    The scope of the started transaction is the receive operation and the even listener
+                                    invocation. The trigger receive operation is executed before the transaction is
+                                    started.
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element name="async-operation-handler" type="asyncOperationHandlerType" minOccurs="0"
+                                     maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:documentation
+                                        source="java:org.openspaces.events.asyncpolling.receive.AsyncOperationHandler">
+                                    The receive operation handler controls the asynchronous receive operation.
+                                    operation.
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element name="exception-handler" type="eventExceptionHandlerType" minOccurs="0"
+                                     maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:documentation
+                                        source="java:org.openspaces.events.EventExceptionHandler">
+                                    A handler for exceptions raised by the listener.
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:choice>
+                            <xsd:element ref="os-core:template" minOccurs="0" maxOccurs="1">
+                                <xsd:annotation>
+                                    <xsd:documentation>
+                                        The template that will be used by the receive operation handler to take/read/...
+                                        event data from the Space.
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:element>
+                            <xsd:element ref="os-core:sql-query" minOccurs="0" maxOccurs="1">
+                                <xsd:annotation>
+                                    <xsd:documentation>
+                                        A sql query that will be used by the receive operation handler to take/read/...
+                                        event data from the Space.
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:element>
+                        </xsd:choice>
+                        <xsd:element name="listener" type="spaceDataEventListenerType" minOccurs="1" maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:documentation source="java:org.openspaces.events.SpaceDataEventListener">
+                                    The Space data event listener that will be used to handle data events caused by the
+                                    receive operation handler.
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                    </xsd:choice>
+                    <xsd:attribute name="receive-timeout" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Set the timeout to use for receive calls, in milliseconds. The default is 60000 ms, that
+                                is, 1 minute.
+
+                                NOTE: This value needs to be smaller than the transaction timeout used by the
+                                transaction manager (in the appropriate unit, of course).
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="concurrent-consumers" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Specify the number of concurrent consumers to create. Default is 1.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="perform-snapshot" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                If set to true will perform snapshot operation on the provided template before invoking
+                                the receive operation. Defaults to true.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="notify-container">
+        <xsd:annotation>
+            <xsd:documentation source="java:org.openspaces.events.notify.SimpleNotifyEventListenerContainer">
+                An event container that uses notifications (also known as event session) in order to register for events
+                based on a template and generating events to a custom listener.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="baseEventContainer">
+                    <xsd:choice minOccurs="1" maxOccurs="unbounded">
+                        <xsd:element name="tx-support" type="txEventSupport" minOccurs="0" maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    Configures the notify container to work under a transaction. The transaction
+                                    manager will be used to start and commit (on success) or rollback (on failure) a
+                                    transaction.
+
+                                    The scope of the started transaction is *after* the notification was received. If a
+                                    transaction rollback occurs, the notification delivery will not be rolled back, just
+                                    the listener operations (that operate under the transaction).
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element name="exception-handler" type="eventExceptionHandlerType" minOccurs="0"
+                                     maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:documentation
+                                        source="java:org.openspaces.events.EventExceptionHandler">
+                                    A handler for exceptions raised by the listener.
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element name="notify" minOccurs="0" maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    Controls which operation will cause for notifications to be sent. Defaults to write
+                                    operations (and once set, will only use the configured operations).
+                                </xsd:documentation>
+                            </xsd:annotation>
+                            <xsd:complexType>
+                                <xsd:attribute name="write" type="xsd:boolean">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            Write operation will cause this listener to be invoked.
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:attribute>
+                                <xsd:attribute name="update" type="xsd:boolean">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            Update operation will cause this listener to be invoked.
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:attribute>
+                                <xsd:attribute name="take" type="xsd:boolean">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            Take operation will cause this listener to be invoked.
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:attribute>
+                                <xsd:attribute name="lease-expire" type="xsd:boolean">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            Lease expiration operation will cause this listener to be invoked.
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:attribute>
+                                <xsd:attribute name="unmatched" type="xsd:boolean">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            Matched entries that no longer match the template will cause this listener
+                                            to be invoked.
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:attribute>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:element name="batch" minOccurs="0" maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    Allows to control the batching of notifications. Once configured, notifications will
+                                    be sent in batches. The notifications will be sent once either the number of
+                                    notifications breaches the size value or the time the notifications are queued
+                                    breaches the time attribute (in milliseconds).
+                                </xsd:documentation>
+                            </xsd:annotation>
+                            <xsd:complexType>
+                                <xsd:attribute name="size" type="xsd:string" use="required">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            If set, turns batching event notifications where the server space
+                                            accumulates notifications to be sent and then send them in batch. The batch
+                                            size controls the number of notifications that will be batched before they
+                                            are sent. Note, if setting this property the 'batch time' must be set as
+                                            well.
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:attribute>
+                                <xsd:attribute name="time" type="xsd:string" use="required">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            If set, turns batching event notifications where the server space
+                                            accumalates notifications to be sent and then send them in batch. The batch
+                                            time controls the elapsed time until the batch buffer is cleared and sent.
+                                            The time is in milliseconds. Note, if setting this property the 'batch size'
+                                            must be set as well.
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:attribute>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:element name="lease" minOccurs="0" maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    If configured will renew the notification registration.
+                                </xsd:documentation>
+                            </xsd:annotation>
+                            <xsd:complexType>
+                                <xsd:attribute name="auto-renew" type="xsd:boolean">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            If set the true, will automatically renew the notification registration.
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:attribute>
+                                <xsd:attribute name="timeout" type="xsd:string">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            Sets the timeout for the notificaiton registration. Defaults to FOREVER.
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:attribute>
+                                <xsd:attribute name="listener" type="xsd:string">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            Sets a reference to a bean that is a lease renew listener.
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:attribute>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:element name="notify-filter" type="notifyFilterType" minOccurs="0" maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    Allows to configure an implementation of
+                                    com.j_spaces.core.client.INotifyDelegatorFilter that will be sent to the server and
+                                    filter notification on the server side.
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:choice>
+                            <xsd:element ref="os-core:template" minOccurs="0" maxOccurs="1">
+                                <xsd:annotation>
+                                    <xsd:documentation>
+                                        The template that will be used to register for notifications.
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:element>
+                            <xsd:element ref="os-core:sql-query" minOccurs="0" maxOccurs="1">
+                                <xsd:annotation>
+                                    <xsd:documentation>
+                                        The template that will be used to register for notifications.
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:element>
+                        </xsd:choice>
+                        <xsd:element name="listener" type="spaceDataEventListenerType" minOccurs="1" maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:documentation source="java:org.openspaces.events.SpaceDataEventListener">
+                                    The Space data event listener that will be used to handle data events caused by
+                                    notifications.
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                    </xsd:choice>
+                    <xsd:attribute name="com-type">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Controls the communication type of how to send the notifications. Defaults to UNICAST.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                        <xsd:simpleType>
+                            <xsd:restriction base="xsd:string">
+                                <xsd:enumeration value="UNICAST">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            Controls how notification are propagated from the space to the listener.
+                                            Unicast propagation uses TCP unicast communication which is usually best for
+                                            small amount of registered clients. This is the default communication type.
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:enumeration>
+                                <xsd:enumeration value="MULTIPLEX">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            Controls how notification are propagated from the space to the listener.
+                                            Same as unicast in terms of communication protocol but uses a single client
+                                            side multiplexer which handles all the dispatching to the different
+                                            notification listeners.
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:enumeration>
+                                <xsd:enumeration value="MULTICAST">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            Controls how notification are propagated from the space to the listener.
+                                            Multicast propagation uses UDP multicast communication which is usually best
+                                            for large amount of registered clients.
+
+                                            Note, when using multicast notifications make sure to enable the multicast
+                                            worker within the Space.
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:enumeration>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                    </xsd:attribute>
+                    <xsd:attribute name="fifo" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Determines if events arrives in the same order they were triggered by the space
+                                "server". Note, for a full fifo based ordering the relevant entries in the space should
+                                be configured to be fifo as well.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="guaranteed" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Controls if the notifications will be guaranteed (at least once) in case of fail over.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="trigger-notify-template" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                If using a replicated space controls if the listener that are replicated to cluster
+                                members will raise notifications.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="replicate-notify-template" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                If using a replicated space controls if the listener will be replicated between all the
+                                replicated cluster members.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="perform-take-on-notify" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                If set to true will remove the event from the space using take operation. Default is
+                                false.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="ignore-event-on-null-take" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                If set to true, will not propagate the event if the take operation returned null
+                                (meaning that other notifications has already taken it). This flag only makes sense when
+                                'perform-take-on-noitify' is set to true.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="perform-snapshot" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                If set to true will perform snapshot operation on the provided template before invoking
+                                the receive operation. Defaults to true.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="pass-array-as-is" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                If set to true will pass an array value returned from a 'receiveOperationHandler'
+                                directly to the listener without "serializing" it as one array element each time.
+                                Defaults to false
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:complexType name="baseEventContainer" abstract="true">
+        <xsd:complexContent>
+            <xsd:extension base="beans:identifiedType">
+                <xsd:attribute name="giga-space" type="os-core:gigaSpaceRefType" use="required">
+                    <xsd:annotation>
+                        <xsd:appinfo>
+                            <tool:annotation kind="ref">
+                                <tool:expected-type type="org.openspaces.core.GigaSpace"/>
+                            </tool:annotation>
+                        </xsd:appinfo>
+                        <xsd:documentation>
+                            The GigaSpace which controls which Space this event container will use.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="active-when-primary" type="xsd:boolean">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            If set the true will cause the event container to be active only when working against a
+                            primary space (in cases when working with a remote Space, it is always considered to be
+                            primary). Defaults to true.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="auto-start" type="xsd:boolean">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            Set whether this container will start once instantiated.
+                            Default is true. Set to false in order for this container to
+                            be started using start().
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="txEventSupport">
+        <xsd:attribute name="tx-manager" type="os-core:txManagerType" use="required">
+            <xsd:annotation>
+                <xsd:documentation>
+                    Sets the transaction manager this event container will use to manage transactions.
+                </xsd:documentation>
+                <xsd:appinfo>
+                    <tool:annotation kind="ref">
+                        <tool:expected-type
+                                type="org.springframework.transaction.PlatformTransactionManager"/>
+                    </tool:annotation>
+                </xsd:appinfo>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="tx-name" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    Specify the transaction name to use for transactional wrapping. Default is the bean name of this
+                    listener container, if any.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="tx-timeout" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    Specify the transaction timeout to use for transactional wrapping, in seconds. Default is none,
+                    using the transaction manager's default timeout.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="tx-isolation" default="DEFAULT">
+            <xsd:simpleType>
+                <xsd:annotation>
+                    <xsd:documentation source="java:org.springframework.transaction.annotation.Isolation">
+                        <![CDATA[The transaction isolation level.]]>
+                    </xsd:documentation>
+                </xsd:annotation>
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="DEFAULT"/>
+                    <xsd:enumeration value="READ_UNCOMMITTED"/>
+                    <xsd:enumeration value="READ_COMMITTED"/>
+                    <xsd:enumeration value="REPEATABLE_READ"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="notifyFilterType">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <tool:annotation kind="ref">
+                    <tool:expected-type type="com.j_spaces.core.client.INotifyDelegatorFilter"/>
+                </tool:annotation>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:group ref="beans:collectionElements"/>
+        <xsd:attribute name="ref" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[
+    A short-cut alternative to a nested "<ref bean='...'/>".
+                ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="spaceDataEventListenerType">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <tool:annotation kind="ref">
+                    <tool:expected-type type="org.openspaces.events.SpaceDataEventListener"/>
+                </tool:annotation>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:choice minOccurs="0" maxOccurs="1">
+                <xsd:element ref="annotation-adapter"/>
+                <xsd:element ref="method-adapter"/>
+                <xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:choice>
+        </xsd:sequence>
+        <xsd:attribute name="ref" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[
+    A short-cut alternative to a nested "<ref bean='...'/>".
+                ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="receiveOperationHandlerType">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <tool:annotation kind="ref">
+                    <tool:expected-type type="org.openspaces.events.polling.receive.ReceiveOperationHandler"/>
+                </tool:annotation>
+            </xsd:appinfo>
+            <xsd:documentation source="java:org.openspaces.events.polling.receive.ReceiveOperationHandler">
+                The receive operation handler controls the receive operation (which results in an Object representing
+                the event) implementation. Defaults to a Single take blocking operation.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:group ref="beans:collectionElements"/>
+        <xsd:attribute name="ref" type="xsd:string">
+            <xsd:annotation>
+                <xsd:appinfo>
+                    <tool:annotation kind="ref">
+                        <tool:expected-type type="org.openspaces.events.polling.receive.ReceiveOperationHandler"/>
+                    </tool:annotation>
+                </xsd:appinfo>
+                <xsd:documentation><![CDATA[
+    A short-cut alternative to a nested "<ref bean='...'/>".
+                ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="asyncOperationHandlerType">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <tool:annotation kind="ref">
+                    <tool:expected-type type="org.openspaces.events.asyncpolling.receive.AsyncOperationHandler"/>
+                </tool:annotation>
+            </xsd:appinfo>
+            <xsd:documentation source="java:org.openspaces.events.asyncpolling.receive.AsyncOperationHandler">
+                The receive operation handler controls the asynchronous receive operation.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:group ref="beans:collectionElements"/>
+        <xsd:attribute name="ref" type="xsd:string">
+            <xsd:annotation>
+                <xsd:appinfo>
+                    <tool:annotation kind="ref">
+                        <tool:expected-type type="org.openspaces.events.asyncpolling.receive.AsyncOperationHandler"/>
+                    </tool:annotation>
+                </xsd:appinfo>
+                <xsd:documentation><![CDATA[
+    A short-cut alternative to a nested "<ref bean='...'/>".
+                ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="triggerOperationHandlerType">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <tool:annotation kind="ref">
+                    <tool:expected-type type="org.openspaces.events.polling.trigger.TriggerOperationHandler"/>
+                </tool:annotation>
+            </xsd:appinfo>
+            <xsd:documentation>
+                The trigger operation handler (if set) is called before a transaction is started, and only if it returns
+                a non null value, the transaction + receive operation + event invocation will be performed.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:group ref="beans:collectionElements"/>
+        <xsd:attribute name="ref" type="xsd:string">
+            <xsd:annotation>
+                <xsd:appinfo>
+                    <tool:annotation kind="ref">
+                        <tool:expected-type type="org.openspaces.events.polling.trigger.TriggerOperationHandler"/>
+                    </tool:annotation>
+                </xsd:appinfo>
+                <xsd:documentation><![CDATA[
+    A short-cut alternative to a nested "<ref bean='...'/>".
+                ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="eventExceptionHandlerType">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <tool:annotation kind="ref">
+                    <tool:expected-type type="org.openspaces.events.EventExceptionHandler"/>
+                </tool:annotation>
+            </xsd:appinfo>
+            <xsd:documentation>
+                A custom handler to handle exception raised by the event listener.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:group ref="beans:collectionElements"/>
+        <xsd:attribute name="ref" type="xsd:string">
+            <xsd:annotation>
+                <xsd:appinfo>
+                    <tool:annotation kind="ref">
+                        <tool:expected-type type="org.openspaces.events.EventExceptionHandler"/>
+                    </tool:annotation>
+                </xsd:appinfo>
+                <xsd:documentation><![CDATA[
+    A short-cut alternative to a nested "<ref bean='...'/>".
+                ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="baseResultEventAdapter">
+        <xsd:complexContent>
+            <xsd:extension base="beans:identifiedType">
+                <xsd:attribute name="write-lease" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            The lease time the result will be written under (in milliseconds). Defaults to FOREVER.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="update-or-write" type="xsd:boolean">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            Sets if the write operation will perform an update in case the entry result already exists
+                            in the space. Default to true.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="update-timeout" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            Sets the update timeout (in milliseconds) in case the flag 'update-or-write' is set to true.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="scope" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            Sets the Spring scope of this listener. Defaults to singleton.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:element name="annotation-adapter">
+        <xsd:annotation>
+            <xsd:documentation>
+                A SpaceDataEventListener that can be configured with a delegate which has one (or more) of its methods
+                annotated with @SpaceDataEvent.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="baseResultEventAdapter">
+                    <xsd:sequence>
+                        <xsd:element name="delegate" minOccurs="1" maxOccurs="1">
+                            <xsd:complexType>
+                                <xsd:group ref="beans:collectionElements"/>
+                                <xsd:attribute name="ref" type="xsd:string">
+                                    <xsd:annotation>
+                                        <xsd:documentation><![CDATA[
+                        A short-cut alternative to a nested "<ref bean='...'/>".
+                                    ]]></xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:attribute>
+                            </xsd:complexType>
+                        </xsd:element>
+                    </xsd:sequence>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="method-adapter">
+        <xsd:annotation>
+            <xsd:documentation>
+                A SpaceDataEventListener that can be configured with a delegate which has one of its methods marked as
+                the listener method (using the 'method-name' attribute).
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="baseResultEventAdapter">
+                    <xsd:sequence>
+                        <xsd:element name="delegate" minOccurs="1" maxOccurs="1">
+                            <xsd:complexType>
+                                <xsd:group ref="beans:collectionElements"/>
+                                <xsd:attribute name="ref" type="xsd:string">
+                                    <xsd:annotation>
+                                        <xsd:documentation><![CDATA[
+                        A short-cut alternative to a nested "<ref bean='...'/>".
+                                    ]]></xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:attribute>
+                            </xsd:complexType>
+                        </xsd:element>
+                    </xsd:sequence>
+                    <xsd:attribute name="method-name" type="xsd:string" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                The method name that will be invoked when an event occurs.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>

@@ -1,0 +1,34 @@
+package com.gigaspaces.server;
+
+import java.util.logging.Logger;
+
+import com.j_spaces.core.IJSpace;
+import com.j_spaces.core.cluster.IReplicationFilter;
+import com.j_spaces.core.cluster.IReplicationFilterEntry;
+import com.j_spaces.core.cluster.ReplicationPolicy;
+
+/**
+ * The purpose of this class is to log replication entries as they
+ * arrive for POC validation purposes
+ * 
+ * @author dfilppi
+ *
+ */
+public class OutboundReplicationFilter implements IReplicationFilter{
+	private static final Logger log=Logger.getLogger(OutboundReplicationFilter.class.getName());
+	private IJSpace space;
+
+	public void close() {
+	}
+
+	public void init(IJSpace space, String paramUrl, ReplicationPolicy policy) {
+		this.space=space;
+	}
+
+	public void process(int direction, IReplicationFilterEntry entry, String targetName) {
+		if((!entry.getClassName().equals(TimeStamp.class.getName()))&&(!entry.getClassName().equals(DomainObject.class.getName()))){
+			entry.discard();
+		}
+	}
+
+}

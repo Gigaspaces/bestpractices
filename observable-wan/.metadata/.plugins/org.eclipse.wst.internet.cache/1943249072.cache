@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<xsd:schema xmlns="http://www.openspaces.org/schema/remoting" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:beans="http://www.springframework.org/schema/beans"
+            xmlns:tool="http://www.springframework.org/schema/tool"
+            xmlns:os-core="http://www.openspaces.org/schema/core"
+            targetNamespace="http://www.openspaces.org/schema/remoting"
+            elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+    <xsd:import namespace="http://www.springframework.org/schema/beans"/>
+    <xsd:import namespace="http://www.springframework.org/schema/tool"/>
+    <xsd:import namespace="http://www.openspaces.org/schema/core"/>
+
+    <xsd:element name="annotation-support">
+        <xsd:annotation>
+            <xsd:documentation>
+                Allows to use different annotation based injection and configuration associated with remoting.
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="service-exporter">
+        <xsd:annotation>
+            <xsd:documentation source="java:org.openspaces.remoting.SpaceRemotingServiceExporter">
+                The remoting service exporter holds a list of services that can be exported for remoting operations
+                using the Space as the transport layer. The exporter is a SpaceDataEventListener and should be plugged
+                with a polling container to enable async (communication) remoting. It is also a Space filter which can
+                be plugged to be used with sync (communication) remoting.
+
+                The services must implement one or more interfaces which are then used as the key to look them up.
+            </xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.openspaces.remoting.SpaceRemotingServiceExporter"/>
+                </tool:annotation>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="beans:identifiedType">
+                    <xsd:sequence>
+                        <xsd:element name="aspect" minOccurs="0" maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <tool:annotation kind="ref">
+                                        <tool:expected-type type="org.openspaces.remoting.ServiceExecutionAspect"/>
+                                    </tool:annotation>
+                                </xsd:appinfo>
+                                <xsd:documentation>
+                                    Allows to set a aspect around each service execution.
+                                </xsd:documentation>
+                            </xsd:annotation>
+                            <xsd:complexType>
+                                <xsd:group ref="beans:collectionElements"/>
+                                <xsd:attribute name="ref" type="xsd:string">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            <![CDATA[A short-cut alternative to a nested "<ref bean='...'/>".]]>
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:attribute>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:element name="service" minOccurs="0" maxOccurs="unbounded">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    A service that will be exposed as a remoting services with the Space as the
+                                    transport layer. Must implement one or more interfaces.
+                                </xsd:documentation>
+                            </xsd:annotation>
+                            <xsd:complexType>
+                                <xsd:group ref="beans:collectionElements"/>
+                                <xsd:attribute name="ref" type="xsd:string">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            <![CDATA[A short-cut alternative to a nested "<ref bean='...'/>".]]>
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:attribute>
+                            </xsd:complexType>
+                        </xsd:element>
+                    </xsd:sequence>
+                    <xsd:attribute name="template-lookup-name" type="xsd:string" use="optional">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Allows to narrow down the async polling container to perform a lookup only on specific
+                                lookup name (which is usually the interface that will be used to proxy it on the client
+                                side). Defaults to match on all async remoting invocations. This option allows to create
+                                several polling container, each for different service that will perform the actual
+                                invocation.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+
+
+    <xsd:element name="event-driven-proxy">
+        <xsd:annotation>
+            <xsd:documentation>
+                A space even driven remoting proxy that forward the service execution to a remote service with the space as
+                the transport layer. Services are remotely exported in the "server side" using the 'service-exporter'
+                (using a polling container).
+
+                Event driven remoting refers to the communication protocol between the proxy and the service exporter. Even driven
+                uses a command entry written to the Space representing a remote invocation. On the "server side" the
+                service exporter waits for the remote invocation using an event container, invokes the proper matching service, and writes the
+                result back to the Space. The even driven proxy in the meanwhile waits for the response (when returning non
+                Future) or returns a Future.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="beans:identifiedType">
+                    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                        <xsd:element name="routing-handler" minOccurs="0" maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <tool:annotation kind="ref">
+                                        <tool:expected-type type="org.openspaces.remoting.RemoteRoutingHandler"/>
+                                    </tool:annotation>
+                                </xsd:appinfo>
+                                <xsd:documentation>
+                                    In case of remote invocation over a partitioned space the default partitioned
+                                    routing index will be random (the hashCode of the newly created remote invocation).
+                                    This RemoteRoutingHandler allows for custom routing computation (for example, based
+                                    on one of the service method parameters).
+                                </xsd:documentation>
+                            </xsd:annotation>
+                            <xsd:complexType>
+                                <xsd:group ref="beans:collectionElements"/>
+                                <xsd:attribute name="ref" type="xsd:string">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            <![CDATA[A short-cut alternative to a nested "<ref bean='...'/>".]]>
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:attribute>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:element name="meta-arguments-handler" minOccurs="0" maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <tool:annotation kind="ref">
+                                        <tool:expected-type type="org.openspaces.remoting.MetaArgumentsHandler"/>
+                                    </tool:annotation>
+                                </xsd:appinfo>
+                                <xsd:documentation>
+                                    Allows to set the meta arguments handler controlling the meta arguments passed with
+                                    each remote invocation.
+                                </xsd:documentation>
+                            </xsd:annotation>
+                            <xsd:complexType>
+                                <xsd:group ref="beans:collectionElements"/>
+                                <xsd:attribute name="ref" type="xsd:string">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            <![CDATA[A short-cut alternative to a nested "<ref bean='...'/>".]]>
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:attribute>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:element name="aspect" minOccurs="0" maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <tool:annotation kind="ref">
+                                        <tool:expected-type type="org.openspaces.remoting.RemoteInvocationAspect"/>
+                                    </tool:annotation>
+                                </xsd:appinfo>
+                                <xsd:documentation>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                            <xsd:complexType>
+                                <xsd:group ref="beans:collectionElements"/>
+                                <xsd:attribute name="ref" type="xsd:string">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            <![CDATA[A short-cut alternative to a nested "<ref bean='...'/>".]]>
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:attribute>
+                            </xsd:complexType>
+                        </xsd:element>
+                    </xsd:choice>
+                    <xsd:attribute name="giga-space" type="os-core:gigaSpaceRefType" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Sets the GigaSpace interface that will be used to work with the space as the transport
+                                layer for both writing and taking EventDrivenSpaceRemotingEntry.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="interface" type="os-core:classType" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                The interface (fully qualified class name) that this remoting proxy will proxy. Also
+                                controls which service will be invoked in the "server".
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="void-one-way" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                If set to true (defaults to false) service methods that return void will be invoked and
+                                the proxy will not wait for a return value. Note, any exception raised by the remote
+                                service will be logged on the server side and not propagated to the client.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="global-one-way" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                If set to true (defaults to false) all of the service methods will be invoked and the
+                                proxy will not wait for a return value. Note, any exception raised by the remote service
+                                will be logged on the server side and not propagated to the client.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="timeout" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Sets the timeout that will be used to wait for the remote invocation response. The
+                                timeout value is in milliseconds and defaults to 60000 (60 seconds).
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="fifo" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Sets the remote invocation objects written to the Space to work in FIFO. Note, when
+                                setting this setting make sure to set it on the 'service-exporter'. This allows for
+                                remoting to work in fifo mode without needing to set the whole Space to work in fifo
+                                mode.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="executor-proxy">
+        <xsd:annotation>
+            <xsd:documentation>
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="beans:identifiedType">
+                    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                        <xsd:element name="routing-handler" minOccurs="0" maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    In case of remote invocation over a partitioned space the default partitioned
+                                    routing index will be random (the hashCode of the newly created remote invocation).
+                                    This RemoteRoutingHandler allows for custom routing computation (for example, based
+                                    on one of the service method parameters).
+                                </xsd:documentation>
+                            </xsd:annotation>
+                            <xsd:complexType>
+                                <xsd:group ref="beans:collectionElements"/>
+                                <xsd:attribute name="ref" type="xsd:string">
+                                    <xsd:annotation>
+                                        <xsd:appinfo>
+                                            <tool:annotation kind="ref">
+                                                <tool:expected-type
+                                                        type="org.openspaces.remoting.RemoteRoutingHandler"/>
+                                            </tool:annotation>
+                                        </xsd:appinfo>
+                                        <xsd:documentation>
+                                            <![CDATA[A short-cut alternative to a nested "<ref bean='...'/>".]]>
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:attribute>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:element name="result-reducer" minOccurs="0" maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    When using broadcast set to true, allows to plug a custom reducer that can reduce
+                                    the array of result objects into another response object.
+                                </xsd:documentation>
+                            </xsd:annotation>
+                            <xsd:complexType>
+                                <xsd:group ref="beans:collectionElements"/>
+                                <xsd:attribute name="ref" type="xsd:string">
+                                    <xsd:annotation>
+                                        <xsd:appinfo>
+                                            <tool:annotation kind="ref">
+                                                <tool:expected-type type="org.openspaces.remoting.RemoteResultReducer"/>
+                                            </tool:annotation>
+                                        </xsd:appinfo>
+                                        <xsd:documentation>
+                                            <![CDATA[A short-cut alternative to a nested "<ref bean='...'/>".]]>
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:attribute>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:element name="meta-arguments-handler" minOccurs="0" maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <tool:annotation kind="ref">
+                                        <tool:expected-type type="org.openspaces.remoting.MetaArgumentsHandler"/>
+                                    </tool:annotation>
+                                </xsd:appinfo>
+                                <xsd:documentation>
+                                    Allows to set the meta arguemnts handler controlling the meta arguments passed with
+                                    each remote invocation.
+                                </xsd:documentation>
+                            </xsd:annotation>
+                            <xsd:complexType>
+                                <xsd:group ref="beans:collectionElements"/>
+                                <xsd:attribute name="ref" type="xsd:string">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            <![CDATA[A short-cut alternative to a nested "<ref bean='...'/>".]]>
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:attribute>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:element name="aspect" minOccurs="0" maxOccurs="1">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <tool:annotation kind="ref">
+                                        <tool:expected-type type="org.openspaces.remoting.RemoteInvocationAspect"/>
+                                    </tool:annotation>
+                                </xsd:appinfo>
+                                <xsd:documentation>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                            <xsd:complexType>
+                                <xsd:group ref="beans:collectionElements"/>
+                                <xsd:attribute name="ref" type="xsd:string">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            <![CDATA[A short-cut alternative to a nested "<ref bean='...'/>".]]>
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:attribute>
+                            </xsd:complexType>
+                        </xsd:element>
+                    </xsd:choice>
+                    <xsd:attribute name="giga-space" type="os-core:gigaSpaceRefType" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Sets the GigaSpace interface that will be used to work with the space as the transport
+                                layer for executions of Space tasks.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="interface" type="os-core:classType" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                The interface (fully qualified class name) that this remoting proxy will proxy. Also
+                                controls which service will be invoked in the "server".
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="timeout" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Sets the timeout that will be used to wait for the remote invocation response. The
+                                timeout value is in milliseconds and defaults to 60000 (60 seconds).
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="broadcast" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                If set the true (defaults to false) causes the remote invocation to be called on all
+                                active (primary) cluster members.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="return-first-result" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                When set to true (defaults to true) will return the first result when using broadcast.
+                                If set to false, an array of results will be retuned. Note, this only applies when
+                                not setting a reducer.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+
+</xsd:schema>

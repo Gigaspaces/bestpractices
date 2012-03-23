@@ -1,0 +1,47 @@
+package com.gigaspaces.server;
+
+import java.util.logging.Logger;
+
+import org.openspaces.core.GigaSpace;
+import org.openspaces.core.context.GigaSpaceLateContext;
+import org.openspaces.core.space.filter.BeforeWrite;
+import org.springframework.beans.factory.InitializingBean;
+
+public class SpaceFilter implements InitializingBean {
+	private final static Logger log=Logger.getLogger(SpaceFilter.class.getName());
+	private String location;
+	@GigaSpaceLateContext
+	GigaSpace space;
+
+	public void afterPropertiesSet() throws Exception {
+	}
+	
+	@BeforeWrite
+	public void beforeWrite(Object obj){
+		if(obj instanceof TimeStamp){
+			if(((TimeStamp)obj).getLocation().equals(location)){
+				((TimeStamp)obj).setTime(System.currentTimeMillis());
+			}
+			else{
+				log.info(String.format("%s %d %s",obj.getClass().getName(),((TimeStamp)obj).getTime(),((TimeStamp)obj).getLocation()));
+			}
+		}
+		else if(obj instanceof DomainObject){
+			if(((DomainObject)obj).getSite().equals(location)){
+				((DomainObject)obj).setTime(System.currentTimeMillis());
+			}
+			else{
+				log.info(String.format("%s %d %d",obj.getClass().getName(),((DomainObject)obj).getTime(),((DomainObject)obj).getValue()));
+			}
+		}
+	}
+	
+	public void setLocation(String location) {
+		this.location = location;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+
+}

@@ -1,0 +1,445 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<xsd:schema xmlns="http://www.openspaces.org/schema/sla"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:beans="http://www.springframework.org/schema/beans"
+            xmlns:tool="http://www.springframework.org/schema/tool"
+            targetNamespace="http://www.openspaces.org/schema/sla"
+            elementFormDefault="qualified"
+            attributeFormDefault="unqualified">
+
+    <xsd:import namespace="http://www.springframework.org/schema/beans"/>
+    <xsd:import namespace="http://www.springframework.org/schema/tool"/>
+
+    <xsd:element name="sla">
+        <xsd:annotation>
+            <xsd:documentation source="java:org.openspaces.pu.sla.SLA">
+                Controls the deployment information of a processing unit. Allows to set the deployment topology
+                (including the cluster schema, number of instances and number of backups), as well as controling
+                relocation or scalling policies based on predefined monitors and controlling the requirements of where a
+                processing unit can be deployed.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:choice minOccurs="0" maxOccurs="1">
+                    <xsd:element name="scale-up-policy">
+                        <xsd:annotation>
+                            <xsd:documentation source="java:org.openspaces.pu.sla.ScaleUpPolicy">
+                                Scale up policy will cause a processing unit instance to be created when the policy
+                                associated monitor breaches its threshold values.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                        <xsd:complexType>
+                            <xsd:attribute name="monitor" type="xsd:string" use="required">
+                                <xsd:annotation>
+                                    <xsd:documentation>
+                                        The monitor name (registered under the monitors section) that its value will
+                                        control the breaching of policy.
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:attribute>
+                            <xsd:attribute name="low" type="xsd:double" use="optional">
+                                <xsd:annotation>
+                                    <xsd:documentation>
+                                        The low threshold value of the policy.
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:attribute>
+                            <xsd:attribute name="high" type="xsd:double" use="required">
+                                <xsd:annotation>
+                                    <xsd:documentation>
+                                        The high threshold value of the policy.
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:attribute>
+                            <xsd:attribute name="lower-dampener" type="xsd:long" use="optional">
+                                <xsd:annotation>
+                                    <xsd:documentation>
+                                        The lower dampener acts as a time window where if the lower threshold has been
+                                        cleared (after it has been breached), it won't cause the policy action to
+                                        happen. Set in milliseconds, defaults to 3000.
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:attribute>
+                            <xsd:attribute name="upper-dampener" type="xsd:long" use="optional">
+                                <xsd:annotation>
+                                    <xsd:documentation>
+                                        The upper dampener acts as a time window where if the upper threshold has been
+                                        cleared (after it has been breached), it won't cause the policy action to
+                                        happen. Set in milliseconds, defaults to 3000.
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:attribute>
+                            <xsd:attribute name="max-instances" type="xsd:positiveInteger" use="required">
+                                <xsd:annotation>
+                                    <xsd:documentation>
+                                        The maximum number of instances this scalling policy will scale to. The minimun
+                                        is the number of instnaces.
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:attribute>
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="relocation-policy">
+                        <xsd:annotation>
+                            <xsd:documentation source="java:org.openspaces.pu.sla.RelocationPolicy">
+                                Relocation policy will cause a processing unit instance to relocate when the policy
+                                associated monitor breaches its threshold values. Relocation means that the processing
+                                unit will be removed from its current grid container and moved to a new one (that meets
+                                its requirements).
+                            </xsd:documentation>
+                        </xsd:annotation>
+                        <xsd:complexType>
+                            <xsd:attribute name="monitor" type="xsd:string" use="required">
+                                <xsd:annotation>
+                                    <xsd:documentation>
+                                        The monitor name that its value will control the breaching of policy. Can either
+                                        be one of the built in monitors or one of the monitors regsitered under the
+                                        monitors section.
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:attribute>
+                            <xsd:attribute name="low" type="xsd:double" use="optional">
+                                <xsd:annotation>
+                                    <xsd:documentation>
+                                        The low threshold value of the policy.
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:attribute>
+                            <xsd:attribute name="high" type="xsd:double" use="required">
+                                <xsd:annotation>
+                                    <xsd:documentation>
+                                        The high threshold value of the policy.
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:attribute>
+                            <xsd:attribute name="lower-dampener" type="xsd:long" use="optional">
+                                <xsd:annotation>
+                                    <xsd:documentation>
+                                        The lower dampener acts as a time window where if the lower threshold has been
+                                        cleared (after it has been breached), it won't cause the policy action to
+                                        happen. Set in milliseconds, defaults to 3000.
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:attribute>
+                            <xsd:attribute name="upper-dampener" type="xsd:long" use="optional">
+                                <xsd:annotation>
+                                    <xsd:documentation>
+                                        The upper dampener acts as a time window where if the upper threshold has been
+                                        cleared (after it has been breached), it won't cause the policy action to
+                                        happen. Set in milliseconds, defaults to 3000.
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:attribute>
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+                <xsd:element name="requirements" type="requirementsType" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="member-alive-indicator" minOccurs="0" maxOccurs="1">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            The member alive indicator allows to configure the SLA on how often a member will be checed
+                            to see if a member is alive, and in case of failure, how many times to retry and how often.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                    <xsd:complexType>
+                        <xsd:attribute name="invocation-delay" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    How often an instance will be checked and verfied to be alive. In milliseconds and
+                                    defaults to 5000, which are 5 seconds.
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:attribute>
+                        <xsd:attribute name="retry-count" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    Once a member has been indicated as not alive, how many times to check it before
+                                    giving up on it. Defaults to 3.
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:attribute>
+                        <xsd:attribute name="retry-timeout" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    Once a member has been indicated as not alive, what is the retry timeout interval.
+                                    In zmilliseconds and defaults to 500 milliseconds.
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:attribute>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="monitors" minOccurs="0" maxOccurs="1">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            One or more monitors that can be defined to monitor the execution of a processing unit. Can
+                            also control the relocation policy.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                    <xsd:complexType>
+                        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                            <xsd:element name="bean-property-monitor" minOccurs="0" maxOccurs="unbounded">
+                                <xsd:annotation>
+                                    <xsd:documentation source="java:org.openspaces.pu.sla.monitor.BeanPropertyMonitor">
+                                        The bean property monitor allows to register a Spring bean reference and a
+                                        proeprty name which will be monitored at a scheduled interval by invoking it.
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                                <xsd:complexType>
+                                    <xsd:attribute name="name" type="xsd:string" use="required">
+                                        <xsd:annotation>
+                                            <xsd:documentation>
+                                                The monitor name that will be used when displayed or referenced in the
+                                                policy.
+                                            </xsd:documentation>
+                                        </xsd:annotation>
+                                    </xsd:attribute>
+                                    <xsd:attribute name="bean-ref" type="xsd:string" use="required">
+                                        <xsd:annotation>
+                                            <xsd:documentation>
+                                                The bean reference (id) that will be monitored.
+                                            </xsd:documentation>
+                                        </xsd:annotation>
+                                    </xsd:attribute>
+                                    <xsd:attribute name="property-name" type="xsd:string" use="required">
+                                        <xsd:annotation>
+                                            <xsd:documentation>
+                                                The property name of the given bean that will be monitored. Note, the
+                                                method invoked will be 'get[Property Name]'.
+                                            </xsd:documentation>
+                                        </xsd:annotation>
+                                    </xsd:attribute>
+                                    <xsd:attribute name="period" type="xsd:positiveInteger" use="optional">
+                                        <xsd:annotation>
+                                            <xsd:documentation>
+                                                The period this monitor will be sampled (in milliseconds). Defaults to 5
+                                                seconds.
+                                            </xsd:documentation>
+                                        </xsd:annotation>
+                                    </xsd:attribute>
+                                    <xsd:attribute name="history-size" type="xsd:positiveInteger" use="optional">
+                                        <xsd:annotation>
+                                            <xsd:documentation>
+                                                The history log size that will be kept for this monitor. Defaults to
+                                                100.
+                                            </xsd:documentation>
+                                        </xsd:annotation>
+                                    </xsd:attribute>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:choice>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="instance-SLAs" minOccurs="0" maxOccurs="1">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="instance-SLA" minOccurs="1" maxOccurs="unbounded">
+                                <xsd:complexType>
+                                    <xsd:sequence>
+                                        <xsd:element name="requirements" type="requirementsType" minOccurs="0"
+                                                     maxOccurs="1"/>
+                                    </xsd:sequence>
+                                    <xsd:attribute name="instance-id" type="xsd:nonNegativeInteger" use="required"/>
+                                    <xsd:attribute name="backup-id" type="xsd:nonNegativeInteger" use="optional"/>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+            <xsd:attribute name="number-of-instances" type="xsd:string" default="1" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Sets the number of instnaces this processing unit will have. Default value is 1. Note, when
+                        specifying a value higher than 1 make sure the cluster schema provided support such topology.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="number-of-backups" type="xsd:string" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        The number of backups per instance this processing unit will have. Defaults to 0. Note, when
+                        specifying a value higher than 0 make sure the cluster schema provided supports such a topology.
+
+                        This value mainly applies when deploying a processing unit that starts an embedded space.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="cluster-schema" type="xsd:string" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        The cluster schema this processing unit will be deployed under. This value mainly applies when
+                        deploying a processing unit that starts an embedded space.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="max-instances-per-vm" type="xsd:string" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Controls how many instances can be deployed per VM. When using a topology without backups, will
+                        control the number of instances based on all the processing unit instances. When working with a
+                        topology that has backups will control the number of a partition and its backups per vm.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="max-instances-per-machine" type="xsd:string" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Controls how many instances can be deployed per machine. When using a topology without backups,
+                        will control the number of instances based on all the processing unit instances. When working
+                        with a topology that has backups will control the number of a partition and its backups per
+                        machine.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="max-instances-per-zone" type="xsd:string" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Controls how many instances can be deployed per zone. When using a topology without backups,
+                        will control the number of instances based on all the processing unit instances. When working
+                        with a topology that has backups will control the number of a partition and its backups per
+                        machine. Format is: "zone1/1", and several zones is: "zoneX/1,zoneY/2".
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:complexType name="requirementsType">
+        <xsd:annotation>
+            <xsd:documentation>
+                Allows to define a set of requirements that control where a processing unit can be deployed.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="host">
+                <xsd:complexType>
+                    <xsd:attribute name="ip" type="xsd:string" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Controls the ip of the machine a processing unit can be deployed to.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="zone">
+                <xsd:complexType>
+                    <xsd:attribute name="name" type="xsd:string" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Controls teh zone of the GSC belongs to where the processing unit can be deployed.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="range">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Controls based on the value of built in monitor if a processing unit can be deployed to.
+                    </xsd:documentation>
+                </xsd:annotation>
+                <xsd:complexType>
+                    <xsd:attribute name="monitor" type="xsd:string" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                The monitor name to get the value from.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="low" type="xsd:string" use="optional">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                The lower threshold where value beneath it will cause the processing unit not to deploy.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="high" type="xsd:string" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                The high threshold where value above it will cause the processing unit not to deploy.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="cpu">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A CPU monitor that controls if a processing unit can deploy to.
+                    </xsd:documentation>
+                </xsd:annotation>
+                <xsd:complexType>
+                    <xsd:attribute name="low" type="xsd:string" use="optional">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Lower values of the CPU beneath this value will cause the processing unit not to deploy.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="high" type="xsd:string" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                High values of the CPU above this value will cause the processing unit not to deploy.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="memory">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A memory monitor that controls if a processing unit can deploy to.
+                    </xsd:documentation>
+                </xsd:annotation>
+                <xsd:complexType>
+                    <xsd:attribute name="low" type="xsd:string" use="optional">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Lower values of the Memory beneath this value will cause the processing unit not to
+                                deploy.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="high" type="xsd:string" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                High values of the Memory above this value will cause the processing unit not to deploy.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="system">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        System reqreuiemtns use custom attributes specified in the processing unit container that can
+                        then be referenced by this deployment if it can be deployed to.
+                    </xsd:documentation>
+                </xsd:annotation>
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="attributes" type="beans:mapType">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    A set of one or more key value pairs (configured similar to Map) of attributes to
+                                    match against.
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                    </xsd:sequence>
+                    <xsd:attribute name="name" type="xsd:string" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                The name of the system attribute.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:choice>
+    </xsd:complexType>
+
+</xsd:schema>

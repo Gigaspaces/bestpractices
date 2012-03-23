@@ -1,0 +1,31 @@
+package com.gigaspaces.server;
+
+import java.io.Serializable;
+
+import com.gigaspaces.annotation.pojo.SpaceClass;
+import com.gigaspaces.annotation.pojo.SpaceId;
+
+@SuppressWarnings("serial")
+@SpaceClass
+public class Account implements Serializable{
+	private int id;
+	private String location;
+
+	@SpaceId
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+
+}
