@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:os-core="http://www.openspaces.org/schema/core"
+       xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.openspaces.org/schema/core http://www.openspaces.org/schema/8.0/core/openspaces-core.xsd
+       http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd">
+
+    <bean id="propertiesConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    </bean>
+
+ <!-- BEGIN mongo config -->
+    <mongo:mongo id="mongo" host="localhost" port="27017">
+        <mongo:options connections-per-host="10"
+                       threads-allowed-to-block-for-connection-multiplier="5"
+                       max-wait-time="12000"
+                       connect-timeout="1000"
+                       socket-timeout="0"
+                       auto-connect-retry="0"/>
+    </mongo:mongo>
+
+    <bean id="mongoEDS" class="org.openspaces.bestpractices.mirror.mongodb.common.MongoEDS">
+        <property name="databaseName" value="test"/>
+        <property name="mongo" ref="mongo"/>
+    </bean>
+    <!-- END cassandra config -->
+
+    <!--
+        The mirror space. Uses the Hibernate external data source. Persists changes done on the Space that
+        connects to this mirror space into the database using Hibernate.
+    -->
+    <os-core:mirror id="mirror" url="/./mirror-service" external-data-source="mongoEDS">
+        <os-core:source-space name="space" partitions="1" backups="1"/>
+        <os-core:properties>
+            <props>
+                <prop key="space-config.external-data-source.data-class">com.j_spaces.core.IGSEntry</prop>
+            </props>
+        </os-core:properties>
+    </os-core:mirror>
+
+</beans>

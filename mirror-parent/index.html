@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>External Data Store: GigaSpaces XAP Best Practices</title>
+</head>
+<body>
+<p>This project incorporates two NoSQL datastores as external data sources for GigaSpaces XAP. The two NoSQL datasources
+    are
+    MongoDB and Cassandra.</p>
+
+<p>Configuration is as simple as constructing a mirror definition file, as shown below:</p>
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?>
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:os-core="http://www.openspaces.org/schema/core"
+       xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.openspaces.org/schema/core http://www.openspaces.org/schema/8.0/core/openspaces-core.xsd
+       http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd">
+
+    &lt;bean id="propertiesConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    &lt;/bean>
+
+ <!-- BEGIN mongo config -->
+    &lt;mongo:mongo id="mongo" host="localhost" port="27017">
+        &lt;mongo:options connections-per-host="10"
+                       threads-allowed-to-block-for-connection-multiplier="5"
+                       max-wait-time="12000"
+                       connect-timeout="1000"
+                       socket-timeout="0"
+                       auto-connect-retry="0"/>
+    &lt;/mongo:mongo>
+
+    &lt;bean id="mongoEDS" class="org.openspaces.bestpractices.mirror.mongodb.common.MongoEDS">
+        &lt;property name="databaseName" value="test"/>
+        &lt;property name="mongo" ref="mongo"/>
+    &lt;/bean>
+    &lt;!-- END mongo config -->
+
+    &lt;!--
+        The mirror space. Uses the Hibernate external data source. Persists changes done on the Space that
+        connects to this mirror space into the database using Hibernate.
+    -->
+    &lt;os-core:mirror id="mirror" url="/./mirror-service" external-data-source="mongoEDS">
+        &lt;os-core:source-space name="space" partitions="1" backups="1"/>
+        &lt;os-core:properties>
+            &lt;props>
+                &lt;prop key="space-config.external-data-source.data-class">com.j_spaces.core.IGSEntry&lt;/prop>
+            &lt;/props>
+        &lt;/os-core:properties>
+    &lt;/os-core:mirror>
+
+&lt;/beans></pre>
+<p>With this configuration, a Java POJO can be written into the space as follows:</p>
+<pre>Person person = new Person();
+person.setFirstName("John");
+person.setLastName("Public");
+person.setCreditScore(600);
+gigaspace.write(person);</pre>
+<p>What the mirror will do is copy it asynchronously to MongoDB, resulting in the following document:</p>
+<pre>{ "_id" : "org_openspaces_bestpractices_mirror_model_Person:A1^1314922448014^4",
+    "creditScore" : 600, "lastName" : "Public", "firstName" : "John" }</pre>
+<p>The Cassandra mirror will do roughly the same thing (with the row key being the same, and the columns corresponding
+    to the POJO attribute names.</p>
+
+<p>Deployment has some requirements.</p>
+<ol>
+    <li>The mirror processing unit must be configured properly.</li>
+    <li>The external data source must be running.</li>
+    <li>The POJOs written must have a @SpaceRouting-annotated field, or a routing field defined in XML.</li>
+    <li>The datagrid processing unit must be set to synchronize (even if no backups exist), and must have the mirror
+        configured.
+    </li>
+</ol>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:os-core="http://www.openspaces.org/schema/core"
+
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.openspaces.org/schema/core http://www.openspaces.org/schema/8.0/core/openspaces-core.xsd">
+
+    <bean id="propertiesConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    </bean>
+
+    <bean id="cassandraEDS" class="org.openspaces.bestpractices.mirror.cassandra.common.CassandraEDS">
+           <property name="clusterName" value="cluster" />
+           <property name="columnFamily" value="columnFamily" />
+           <property name="host" value="localhost" />
+           <property name="keyspaceName" value="localKeySpace" />
+           <property name="port" value="19160" />
+       </bean>
+
+    <!--
+        The mirror space. Uses the Hibernate external data source. Persists changes done on the Space that
+        connects to this mirror space into the database using Hibernate.
+    -->
+     <os-core:space id="space" url="/./space" mirror="true">
+        <os-core:properties>
+            <props>
+                <prop key="space-config.external-data-source.data-class">com.j_spaces.core.IGSEntry</prop>
+            </props>
+        </os-core:properties>
+    </os-core:space>
+
+</beans>

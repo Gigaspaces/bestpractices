@@ -1,0 +1,165 @@
+package com.gigaspaces.server;
+
+import java.util.concurrent.TimeUnit;
+
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+import org.openspaces.core.GigaSpace;
+import org.openspaces.core.GigaSpaceConfigurer;
+import org.openspaces.core.space.UrlSpaceConfigurer;
+
+/**
+ * Purpose of this class is to write account objects.  Invoked from command line
+ * 
+ * @author dfilppi
+ *
+ */
+public class AccountWriter {
+	private int quantity;  //number to write
+	private String location; //for domain object
+	private int rate;  //write rate - accuracy limited to platform timer resolution
+	private long duration;
+	private String spaceName;
+	private String host="localhost";
+	private GigaSpace gs=null;
+
+
+	public int getQuantity() {
+		return quantity;
+	}
+
+	@Option(name="-q",usage="number to write")
+	public void setQuantity(int quantity){
+		if(quantity<0)throw new RuntimeException("quantity cannot be negative");
+		this.quantity = quantity;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+
+	@Option(name="-l",usage="location name",required=true)
+	public void setLocation(String location) {
+		this.location = location;
+	}
+
+	public int getRate() {
+		return rate;
+	}
+
+	@Option(name="-r",usage="writes per second")
+	public void setRate(int rate) {
+		if(rate<0)throw new RuntimeException("rate cannot be negative");
+		this.rate = rate;
+	}
+
+	public long getDuration() {
+		return duration;
+	}
+
+	@Option(name="-d",usage="duration in ms")
+	public void setDuration(long duration) {
+		if(duration<0)throw new RuntimeException("duration cannot be negative");
+		this.duration = duration;
+	}
+	
+	public String getSpaceName() {
+		return spaceName;
+	}
+
+	@Option(name="-s",usage="space name",required=true)
+	public void setSpaceName(String spaceName) {
+		this.spaceName = spaceName;
+	}
+
+	public String getHost() {
+		return host;
+	}
+
+	@Option(name="-h",usage="host name")
+	public void setHost(String host) {
+		this.host = host;
+	}
+
+
+	public void setGigaSpace(GigaSpace gs) {
+		this.gs = gs;
+	}
+
+	public GigaSpace getGigaSpace() {
+		return gs;
+	}
+
+	public void run(){
+		long sleepms=0;
+		long sleepnano=0;
+		long start=System.currentTimeMillis();
+		int cnt=0;
+
+		try{
+			if(rate>0){
+				sleepnano=TimeUnit.SECONDS.toNanos(1)/(long)(rate);
+				if(sleepnano>1000000L){
+					sleepms=sleepnano/1000000L;
+					sleepnano%=1000000L;
+				}
+			}
+			//quantity based
+			if(quantity>0){
+				for(int i=0;i<quantity;i++){
+					Account acct=new Account();
+					acct.setId(i);
+					acct.setLocation(location);
+					gs.write(acct);
+					if(sleepms>0||sleepnano>0)Thread.sleep(sleepms,(int)sleepnano);
+				}
+			}
+			//time based
+			else if(duration>0){
+				while(true){
+					Account acct=new Account();
+					acct.setId(cnt);
+					acct.setLocation(location);
+					gs.write(acct);
+					cnt++;
+					if(sleepms>0||sleepnano>0)Thread.sleep(sleepms,(int)sleepnano);
+					if(System.currentTimeMillis()-start > duration)break;
+				}
+			}
+		}
+		catch(Exception e){
+			if(e instanceof RuntimeException){
+				throw (RuntimeException)e;
+			}
+			else{
+				throw new RuntimeException(e);
+			}
+		}
+		
+		if(duration>0){
+			System.out.println("objects written: "+cnt);
+			System.out.println("actual write rate: "+((float)cnt)/(System.currentTimeMillis()-start)*1000);
+		}
+	}
+
+	public static void main(String[] args)throws Exception{
+		AccountWriter writer=new AccountWriter();
+		new CmdLineParser(writer).parseArgument(args);
+
+		if(writer.getQuantity()>0 && writer.getDuration()>0L){
+			System.err.println("quantity and duration options are mutually exclusive");
+			System.exit(1);
+		}
+		else if(writer.getQuantity()==0 && writer.getDuration()==0L){
+			System.err.println("must specify either quantity or duration");
+			System.exit(1);
+		}
+
+		UrlSpaceConfigurer sc=new UrlSpaceConfigurer("jini://"+writer.getHost()+"/*/"+writer.getSpaceName()+"?locators="+writer.getHost());
+		GigaSpace gs=new GigaSpaceConfigurer(sc.space()).gigaSpace();
+
+		writer.setGigaSpace(gs);
+		writer.run();
+	}
+
+}

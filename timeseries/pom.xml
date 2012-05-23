@@ -1,0 +1,93 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+
+	<groupId>timeseries</groupId>
+	<artifactId>timeseries</artifactId>
+	<version>1.0</version>
+	<packaging>pom</packaging>
+	<name>timeseries-demo</name>
+	<modelVersion>4.0.0</modelVersion>
+
+	<properties>
+		<gsVersion>8.0.3</gsVersion>
+		<springVersion>3.0.5.RELEASE</springVersion>
+	</properties>
+
+	<modules>
+		<module>common</module>
+		<module>components</module>
+		<module>timeseries-pu</module>
+		<module>timeseries-mirror-pu</module>
+		<module>timeseries-web</module>
+	</modules>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.8.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.gigaspaces</groupId>
+			<artifactId>gs-openspaces</artifactId>
+			<version>${gsVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.gigaspaces</groupId>
+			<artifactId>gs-runtime</artifactId>
+			<version>${gsVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<version>${springVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>${springVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+			<version>${springVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+			<version>${springVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+		  <plugin>
+			  <groupId>org.apache.maven.plugins</groupId>	
+			  <artifactId>maven-compiler-plugin</artifactId>	
+			  <version>2.3.2</version>	
+			  <configuration>
+				  <compilerVersion>1.6</compilerVersion>
+				  <target>1.6</target>
+			  </configuration>
+		  </plugin>
+		  <plugin>
+    		<groupId>org.apache.maven.plugins</groupId>
+        	<artifactId>maven-surefire-plugin</artifactId>
+			<version>2.9</version>
+        	<configuration>
+			  <systemPropertyVariables>
+  			    <com.gs.licensekey>${env.GSLICENSE}</com.gs.licensekey>
+  			  </systemPropertyVariables>
+        	</configuration>
+		  </plugin>
+		</plugins>
+	</build>
+</project>

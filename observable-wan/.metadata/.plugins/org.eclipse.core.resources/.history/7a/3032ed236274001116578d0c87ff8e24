@@ -1,0 +1,27 @@
+package com.gigaspaces.server;
+
+import org.openspaces.admin.Admin;
+import org.openspaces.admin.AdminFactory;
+import org.openspaces.admin.gsm.GridServiceManager;
+import org.openspaces.admin.pu.ProcessingUnit;
+import org.openspaces.admin.pu.elastic.config.EagerScaleConfig;
+import org.openspaces.admin.space.ElasticSpaceDeployment;
+import org.openspaces.core.util.MemoryUnit;
+
+public class Test {
+
+	public static void main(String[] args){
+		Admin admin = new AdminFactory().addGroup("gigaspaces-XAPPremium-8.0.4-ga").create();
+		admin.getGridServiceAgents().waitForAtLeastOne();
+		admin.getElasticServiceManagers().waitForAtLeastOne();
+		GridServiceManager gsm = admin.getGridServiceManagers().waitForAtLeastOne();
+
+		ProcessingUnit pu = gsm.deploy(
+		        new ElasticSpaceDeployment("space")
+		           .memoryCapacityPerContainer(1,MemoryUnit.GIGABYTES) 
+		           .numberOfPartitions(2)
+		           .singleMachineDeployment()
+		           .scale(new EagerScaleConfig())
+		);		
+	}
+}

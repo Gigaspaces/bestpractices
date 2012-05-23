@@ -1,0 +1,549 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<xsd:schema xmlns="http://www.openspaces.org/schema/core/gateway" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:beans="http://www.springframework.org/schema/beans"
+            xmlns:tool="http://www.springframework.org/schema/tool"
+            xmlns:os-core="http://www.openspaces.org/schema/core"
+            targetNamespace="http://www.openspaces.org/schema/core/gateway"
+            elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+    <xsd:import namespace="http://www.springframework.org/schema/beans"/>
+    <xsd:import namespace="http://www.springframework.org/schema/tool"/>
+    <xsd:import namespace="http://www.openspaces.org/schema/core"/>
+
+    <xsd:element name="delegator">
+    	<xsd:annotation>
+    		<xsd:documentation>
+				A delegator is responsible for delegating outgoing replication from a local site to a remote gateway.
+			</xsd:documentation>
+    	</xsd:annotation>
+		<xsd:complexType>
+            <xsd:complexContent>
+            <xsd:extension base="beans:identifiedType">
+				<xsd:choice>
+				<xsd:sequence>
+				<xsd:element name="delegation" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation>
+							Specifies delegation to a target site with an option to delegate through
+							another site.
+							Deprecated since 8.0.4 - use delegations tag instead.
+						</xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:attribute name="target" type="xsd:string" use="required">
+							<xsd:annotation>
+								<xsd:documentation>
+									Specifies the gateway target name for a delegation.
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
+						<xsd:attribute name="delegate-through" type="xsd:string"
+							use="optional">
+							<xsd:annotation>
+								<xsd:documentation>
+									Specifies a gateway name to delegate through.
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
+					</xsd:complexType>
+				</xsd:element>
+				</xsd:sequence>
+				<xsd:sequence>
+				<xsd:element name="delegations" minOccurs="0" maxOccurs="1">
+					<xsd:complexType>
+			            <xsd:complexContent>
+			            <xsd:extension base="beans:identifiedType">
+					    <xsd:sequence>
+							<xsd:element name="delegation" minOccurs="0" maxOccurs="unbounded">
+								<xsd:annotation>
+									<xsd:documentation>
+										Specifies delegation to a target site with an option to delegate through
+										another site.
+									</xsd:documentation>
+								</xsd:annotation>
+								<xsd:complexType>
+									<xsd:attribute name="target" type="xsd:string" use="required">
+										<xsd:annotation>
+											<xsd:documentation>
+												Specifies the gateway target name for a delegation.
+											</xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+									<xsd:attribute name="delegate-through" type="xsd:string"
+										use="optional">
+										<xsd:annotation>
+											<xsd:documentation>
+												Specifies a gateway name to delegate through.
+											</xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+								</xsd:complexType>
+							</xsd:element>
+					    </xsd:sequence>
+			          </xsd:extension>
+			          </xsd:complexContent>
+					</xsd:complexType>
+				</xsd:element>		  
+				<xsd:element name="security" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+					<xsd:documentation>
+						Security login information used for secured space authentication and performing admin operations by the Delegator component. 
+					</xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:attribute name="username" type="xsd:string">
+							<xsd:annotation>
+								<xsd:documentation>
+									Username used for authentication.
+								</xsd:documentation>
+							</xsd:annotation>						
+						</xsd:attribute>					
+						<xsd:attribute name="password" type="xsd:string">
+							<xsd:annotation>
+								<xsd:documentation>
+									Password used for authentication.
+								</xsd:documentation>
+							</xsd:annotation>						
+						</xsd:attribute>
+						<xsd:attribute name="user-details" type="xsd:string">
+							<xsd:annotation>
+								<xsd:documentation>
+									User details bean reference containing username and password used for authentication.
+								</xsd:documentation>
+							</xsd:annotation>												
+						</xsd:attribute>
+					</xsd:complexType>
+		        </xsd:element>
+		        </xsd:sequence>
+		        </xsd:choice>
+				<xsd:attribute name="local-gateway-name" type="xsd:string" use="required">
+					<xsd:annotation>
+						<xsd:documentation>
+							Specifies the local gateway name used for identifying it.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="gateway-lookups" type="gatewayLookupsRefType" use="required">
+					<xsd:annotation>
+						<xsd:documentation>
+							Specifies the gateway lookups configuration.							
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="start-embedded-lus" type="xsd:boolean" default="true" use="optional">
+					<xsd:annotation>
+						<xsd:documentation>
+							Determines whether to start an embedded lookup service within the delegator component.							
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="relocate-if-wrong-ports" type="xsd:boolean" default="true" use="optional">
+					<xsd:annotation>
+						<xsd:documentation>
+							Determines whether the component containing processing unit instance
+							should start and relocate it self to a new GSC if
+							the required ports for this processing unit in the currently deployed GSC
+							are wrong. 
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="custom-jvm-properties" type="xsd:string" use="optional" />
+				<xsd:attribute name="communication-port" type="xsd:string" use="optional" />
+          </xsd:extension>
+          </xsd:complexContent>
+		</xsd:complexType>
+    </xsd:element>
+    <xsd:element name="targets">
+		<xsd:annotation>
+			<xsd:documentation>
+				Defines gateway targets and gateway replication configuration for a space.
+				The gateway targets are defined using the 'target' element.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+            <xsd:complexContent>
+            <xsd:extension base="beans:identifiedType">
+		    <xsd:sequence>
+		      <xsd:element name="target" minOccurs="1" maxOccurs="unbounded">
+				<xsd:complexType>
+				<xsd:attribute name="name" type="xsd:string" use="required">
+					<xsd:annotation>
+						<xsd:documentation>
+							Specifies the target name.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="bulk-size" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>
+							Specifies the size of each replication bulk in terms of replication packets for this target.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="idle-time-threshold" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>
+							Specifies the maximum time to wait since the last time a replication
+							bulk was transmitted for this target, once elapsed, a replication bulk will be
+							transmitted even if the pending-operation-threshold is not reached.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="pending-operation-threshold" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>
+							Specifies the threshold of number of packets that are pending
+							replication that once breached, a replication bulk will be transmitted for this target. 						
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="max-redo-log-capacity" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>
+							Specifies the maximum number of packets that should be held in the
+							redo-log for a replication gateway for this target (-1 means unlimited).
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="on-redo-log-capacity-exceeded" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>
+							'drop-oldest' will result in dropping the oldest packet in the redo-log
+							once the capacity is exceeded, 'block-operations' will result in blocking
+							all new replicated operations by denying such new operation by throwing
+							an exception to the operation invoker. 
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				</xsd:complexType>
+		      </xsd:element>
+		    </xsd:sequence>
+			<xsd:attribute name="local-gateway-name" type="xsd:string" use="required">
+					<xsd:annotation>
+						<xsd:documentation>
+							Sets the local gateway name used for identifying it.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+			<xsd:attribute name="bulk-size" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						Specifies the size of each replication bulk in terms of replication packets.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="idle-time-threshold" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						Specifies the maximum time to wait since the last time a replication
+						bulk was transmitted, once elapsed, a replication bulk will be
+						transmitted even if the pending-operation-threshold is not reached.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="pending-operation-threshold" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						Specifies the threshold of number of packets that are pending
+						replication that once breached, a replication bulk will be transmitted.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="max-redo-log-capacity" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						Specifies the maximum number of packets that should be held in the
+						redo-log for a replication gateway (-1 means unlimited).
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>	
+			<xsd:attribute name="on-redo-log-capacity-exceeded">
+				<xsd:annotation>
+					<xsd:documentation>
+						'drop-oldest' will result in dropping the oldest packet in the redo-log
+						once the capacity is exceeded, 'block-operations' will result in blocking
+						all new replicated operations by denying such new operation by
+						throwing
+						an exception to the operation invoker.
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:enumeration value="block-operations" />
+						<xsd:enumeration value="drop-oldest" />
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:attribute>
+          </xsd:extension>
+          </xsd:complexContent>
+		</xsd:complexType>
+    </xsd:element>
+    <xsd:element name="lookups">
+		<xsd:annotation>
+			<xsd:documentation>
+				Configures communication information for each target such as hostname, communication and discovery ports.
+			</xsd:documentation>
+		</xsd:annotation>    
+		<xsd:complexType>
+            <xsd:complexContent>
+            <xsd:extension base="beans:identifiedType">
+		    <xsd:sequence>
+		      <xsd:element name="lookup" minOccurs="0" maxOccurs="unbounded">
+				<xsd:complexType>
+				<xsd:attribute name="gateway-name" type="xsd:string" use="required">
+					<xsd:annotation>
+						<xsd:documentation>
+							Sets the gateway name used for identifiying it.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="host" type="xsd:string" use="required">
+					<xsd:annotation>
+						<xsd:documentation>
+							Sets the hostname which will be used when connecting to this target.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="discovery-port" type="xsd:string" use="required">
+					<xsd:annotation>
+						<xsd:documentation>
+							Sets the port which will be used for discovering this target.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="communication-port" type="xsd:string" use="optional">
+					<xsd:annotation>
+						<xsd:documentation>
+							Sets the port which will be used for communicating with this target.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				</xsd:complexType>
+		      </xsd:element>
+		    </xsd:sequence>
+			<xsd:attribute name="lookup-group" type="xsd:string" use="optional" />
+          </xsd:extension>
+          </xsd:complexContent>
+		</xsd:complexType>
+    </xsd:element>
+    <xsd:element name="sink">
+       	<xsd:annotation>
+    		<xsd:documentation>
+				A Sink component is responsible for receiving incoming data and perform
+				the appropriate operations on a local cluster.
+			</xsd:documentation>
+    	</xsd:annotation>
+		<xsd:complexType>
+    	    <xsd:complexContent>
+        	<xsd:extension base="beans:identifiedType">
+        	<xsd:all>
+			    <xsd:element name="sources" minOccurs="1" maxOccurs="1">
+			    	<xsd:annotation>
+			    		<xsd:documentation>
+							Sets the replication sources for this Sink component.
+						</xsd:documentation>
+			    	</xsd:annotation>
+					<xsd:complexType>
+			            <xsd:complexContent>
+			            <xsd:extension base="beans:identifiedType">
+					    <xsd:sequence>
+					      <xsd:element name="source" minOccurs="1" maxOccurs="unbounded">
+					    	<xsd:annotation>
+					    		<xsd:documentation>
+									Sets a replication source for this Sink component.
+								</xsd:documentation>
+					    	</xsd:annotation>
+							<xsd:complexType>
+							<xsd:attribute name="name" type="xsd:string" use="required">
+						       	<xsd:annotation>
+						    		<xsd:documentation>
+						    			Sets the replication gateway name for this source.
+									</xsd:documentation>
+						    	</xsd:annotation>
+							</xsd:attribute>
+							</xsd:complexType>
+					      </xsd:element>
+					    </xsd:sequence>
+			          </xsd:extension>
+			          </xsd:complexContent>
+					</xsd:complexType>
+			    </xsd:element>
+			    <xsd:element name="error-handling" minOccurs="0" maxOccurs="1">
+			       	<xsd:annotation>
+			    		<xsd:documentation>
+							This element configures the behavior of the Sink component's error
+							handling such as amount of retires
+							and conflict resolution.
+						</xsd:documentation>
+			    	</xsd:annotation>
+			    	<xsd:complexType>
+				    	<xsd:attribute name="conflict-resolver" type="conflictResolverRefType" use="optional">
+					       	<xsd:annotation>
+					    		<xsd:documentation>
+					    			Sets a conflict resolver bean for customizing error handling for a Sink component.
+								</xsd:documentation>							
+					    	</xsd:annotation>
+				    	</xsd:attribute>
+				    	<xsd:attribute name="max-retries-on-tx-lock" type="xsd:string" use="optional">
+					       	<xsd:annotation>
+					    		<xsd:documentation>
+					    			Sets the amount of retries per operation that failed due to a transaction lock.
+								</xsd:documentation>
+					    	</xsd:annotation>
+				    	</xsd:attribute>
+				    	<xsd:attribute name="tx-lock-retry-interval" type="xsd:string" use="optional">
+					       	<xsd:annotation>
+					    		<xsd:documentation>
+									Sets the time interval (in milliseconds) between retries for operations
+									that failed due to a transaction lock.
+								</xsd:documentation>
+					    	</xsd:annotation>
+				    	</xsd:attribute>
+			    	</xsd:complexType>
+			    </xsd:element>
+			    <xsd:element name="tx-support" minOccurs="0" maxOccurs="1">
+			       	<xsd:annotation>
+			    		<xsd:documentation>
+			    			Configures distributed transaction processing parameters for the Sink component. 
+						</xsd:documentation>
+			    	</xsd:annotation>
+			    	<xsd:complexType>
+				    	<xsd:attribute name="dist-tx-wait-timeout-millis" type="xsd:string" use="optional">
+					       	<xsd:annotation>
+					    		<xsd:documentation>
+									Sets the timeout (in milliseconds) for distributed transaction partial
+									participants commit.
+								</xsd:documentation>
+					    	</xsd:annotation>
+				    	</xsd:attribute>
+				    	<xsd:attribute name="dist-tx-wait-for-opers" type="xsd:string" use="optional">
+					       	<xsd:annotation>
+					    		<xsd:documentation>
+									Sets the number of operations to wait until distributed transaction
+									partial participants commit.
+								</xsd:documentation>
+					    	</xsd:annotation>
+				    	</xsd:attribute>
+			    	</xsd:complexType>
+			    </xsd:element>
+				<xsd:element name="security" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+					<xsd:documentation>
+						Security login information used for secured space authentication and performing admin operations by the Sink component. 
+					</xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:attribute name="username" type="xsd:string">
+							<xsd:annotation>
+								<xsd:documentation>
+									Username used for authentication.
+								</xsd:documentation>
+							</xsd:annotation>						
+						</xsd:attribute>					
+						<xsd:attribute name="password" type="xsd:string">
+							<xsd:annotation>
+								<xsd:documentation>
+									Password used for authentication.
+								</xsd:documentation>
+							</xsd:annotation>						
+						</xsd:attribute>
+						<xsd:attribute name="user-details" type="xsd:string">
+							<xsd:annotation>
+								<xsd:documentation>
+									User details bean reference containing username and password used for authentication.
+								</xsd:documentation>
+							</xsd:annotation>												
+						</xsd:attribute>
+					</xsd:complexType>
+		        </xsd:element>		      
+   	    	</xsd:all>
+			<xsd:attribute name="local-gateway-name" type="xsd:string" use="required">
+		       	<xsd:annotation>
+		    		<xsd:documentation>
+		    			Sets the gateway name for the Sink component used for identifying it.
+					</xsd:documentation>
+		    	</xsd:annotation>
+	    	</xsd:attribute>
+			<xsd:attribute name="gateway-lookups" type="gatewayLookupsRefType" use="required">
+		       	<xsd:annotation>
+		    		<xsd:documentation>
+		    			Sets the gateway lookups information for communication with other gateways.
+					</xsd:documentation>
+		    	</xsd:annotation>
+	    	</xsd:attribute>
+			<xsd:attribute name="local-space-url" type="xsd:string" use="required">
+		       	<xsd:annotation>
+		    		<xsd:documentation>
+		    			Sets the local cluster URL for performing operations against.
+		    			For example: 'jini://*/*/space'
+					</xsd:documentation>
+		    	</xsd:annotation>
+	    	</xsd:attribute>
+			<xsd:attribute name="start-embedded-lus" type="xsd:boolean" default="true">
+		       	<xsd:annotation>
+		    		<xsd:documentation>
+							Determines whether to start an embedded lookup service within the sink component.							
+					</xsd:documentation>
+		    	</xsd:annotation>
+	    	</xsd:attribute>
+			<xsd:attribute name="relocate-if-wrong-ports" type="xsd:boolean" default="true" use="optional">
+				<xsd:annotation>
+					<xsd:documentation>
+						Determines whether the component containing processing unit instance
+						should start and relocate it self to a new GSC if
+						the required ports for this processing unit in the currently deployed GSC
+						are wrong. 
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="requires-bootstrap" type="xsd:boolean" default="false" use="optional">
+				<xsd:annotation>
+					<xsd:documentation>
+						Sets whether the sink component requires a bootstrap before it becomes available.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="tx-timeout" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation>
+						Sets the transaction timeout (in milliseconds) for the operations made
+						by the sink against the local cluster.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="local-space-lookup-timeout" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation>
+						Sets the lookup timeout (in milliseconds) used for locating the local
+						cluster by the sink.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="custom-jvm-properties" type="xsd:string" use="optional" />
+			<xsd:attribute name="communication-port" type="xsd:string" use="optional" />
+    	   	</xsd:extension>
+    	   	</xsd:complexContent>
+		</xsd:complexType>
+    </xsd:element>
+    <xsd:simpleType name="gatewayLookupsRefType">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <tool:annotation kind="ref">
+                    <tool:expected-type type="org.openspaces.core.gateway.GatewayLookupsFactoryBean" />
+                </tool:annotation>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:union memberTypes="xsd:string"/>
+	</xsd:simpleType>
+	    <xsd:simpleType name="conflictResolverRefType">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <tool:annotation kind="ref">
+	               <tool:expected-type type="com.gigaspaces.cluster.replication.gateway.ConflictResolver"/>
+                </tool:annotation>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:union memberTypes="xsd:string"/>
+	</xsd:simpleType>
+</xsd:schema>

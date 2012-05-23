@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:os-core="http://www.openspaces.org/schema/core"
+	xmlns:os-events="http://www.openspaces.org/schema/events"
+	xmlns:os-remoting="http://www.openspaces.org/schema/remoting"
+	xmlns:os-sla="http://www.openspaces.org/schema/sla"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.openspaces.org/schema/core http://www.openspaces.org/schema/core/openspaces-core.xsd
+       http://www.openspaces.org/schema/events http://www.openspaces.org/schema/events/openspaces-events.xsd
+       http://www.openspaces.org/schema/remoting http://www.openspaces.org/schema/remoting/openspaces-remoting.xsd
+       http://www.openspaces.org/schema/sla http://www.openspaces.org/schema/sla/openspaces-sla.xsd">
+
+
+	<bean id="cassandraEDS"
+		class="org.openspaces.timeseries.mirror.CassandraEDS">
+		<property name="cassandraURL" value="jdbc:cassandra:username/password@127.0.0.1:9160/TEST"/>		
+		<!-- <property name="clusterName" value="cluster" />
+		<property name="columnFamily" value="columnFamily" />
+		<property name="host" value="localhost" />
+		<property name="keyspaceName" value="localKeySpace" />
+		<property name="port" value="19160" />-->
+	</bean>
+
+	<os-sla:sla number-of-instances="1" />
+
+<!-- 	<os-core:mirror id="mirror" url="/./mirror-service"
+		external-data-source="cassandraEDS" operation-grouping="group-by-replication-bulk">
+	</os-core:mirror>-->
+
+	<!-- <bean id="space" class="org.openspaces.core.space.UrlSpaceFactoryBean">
+		<property name="url" value="/./mirror-space" />
+		<property name="schema" value="mirror" />
+		<property name="externalDataSource" ref="cassandraEDS" />
+	</bean> -->
+	
+	<os-core:space id="mirror" url="/./mirror-service" schema="mirror" external-data-source="cassandraEDS">
+		<os-core:properties>
+			<props>
+				<prop key="space-config.mirror-service.cluster.name">space</prop>
+				<prop key="space-config.mirror-service.cluster.partitions">1</prop>
+				<prop key="space-config.mirror-service.cluster.backups-per-partition">0</prop>
+				<prop key="space-config.mirror-service.operation-grouping">group-by-replication-bulk</prop>
+				<prop key="space-config.external-data-source.data-class">com.j_spaces.core.IGSEntry</prop>
+			</props>
+		</os-core:properties>
+	</os-core:space>	
+	
+	</beans>
+  

@@ -1,0 +1,2 @@
+serviceClass: org.openspaces.timeseries.client.TicksService
+path: A65713B507A85733103A31B988E69454.gwt.rpc
