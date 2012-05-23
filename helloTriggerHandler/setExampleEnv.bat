@@ -10,6 +10,8 @@ set LOOKUPGROUPS=
 set NIC_ADDR=localhost
 set LOOKUPLOCATORS=%NIC_ADDR%
 
-set SPACE_URL=jini://*/*/mySpace
+set JAVA_OPTIONS=-Djava.rmi.server.hostname=localhost
+
+set SPACE_URL=jini://*/*/processorSpace
 
 call %GS_HOME%\bin\setenv.bat
