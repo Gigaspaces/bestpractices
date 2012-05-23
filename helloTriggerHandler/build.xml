@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+
+<project name="helloworld" default="usage" basedir=".">
+
+    <property name="hello-world-dir" location="${basedir}"/>
+	<property file="build.properties"/>
+	
+	<condition property="gshome.dir" value="../../">
+        <not>
+            <isset property="gshome.dir"/>
+        </not>
+    </condition>
+
+    <property name="helloworld-src" value="${hello-world-dir}/src"/>
+    <property name="helloworld-pu" value="${hello-world-dir}/pu/hello-world"/>
+	<property name="helloworld-pu-jar" location="${hello-world-dir}/pu/hello-world.jar"/>
+	<property name="helloworld-dist" value="${hello-world-dir}/dist"/>
+    <property name="helloworld-lib" value="${helloworld-pu}/lib"/>
+
+    <path id="all-libs">
+        <fileset dir="${gshome.dir}/lib">
+            <include name="**/*.jar"/>
+            <exclude name="**/mule-os.jar" />
+        </fileset>
+    </path>
+
+    <target name="usage">
+        <echo message=""/>
+        <echo message="Helloworld build script"/>
+        <echo message="-----------------------------------------"/>
+        <echo message=""/>
+        <echo message="Among the available targets are:"/>
+        <echo message=""/>
+        <echo message="clean                    --> Cleans all output dirs"/>
+        <echo message="build                    --> Builds all; don't create JARs"/>
+        <echo message="dist                     --> Builds the distribution"/>        
+        <echo message="deploy-helloworld        --> Deploys the helloworld onto the service grid"/>
+		<echo message="run-feeder               --> Starts the feeder"/>
+        <echo message=""/>
+    </target>
+
+    <target name="clean">
+        <delete dir="${hello-world-dir}/pu"/>				
+    </target>
+
+    <target name="build" depends="clean">
+        <build src="${helloworld-src}" classes="${helloworld-pu}" additional-classpath=""/>
+    </target>
+
+    <target name="dist" depends="build">
+		<!-- Create a jar file containing the helloworld -->
+		<jar basedir="${helloworld-pu}" jarfile="${helloworld-pu-jar}"/>			
+    </target>    
+
+    <target name="deploy-helloworld" depends="dist">
+	    <deploy name="${helloworld-pu-jar}" />
+    </target>    
+		
+	<target name="run-feeder" depends="dist">
+		<java classname="org.openspaces.example.helloworld.feeder.Feeder" fork="false">
+            <classpath refid="all-libs"/>
+			<classpath location="${helloworld-pu-jar}"/>
+			<!-- the space-to-feed-url is set in the build.properties file-->
+			<arg value="${space-to-feed-url}"/>
+	    </java>
+	</target>    
+
+    <macrodef name="build">
+        <attribute name="src"/>
+        <attribute name="classes"/>
+        <attribute name="additional-classpath"/>
+        <sequential>
+            <mkdir dir="@{classes}"/>
+
+            <javac destdir="@{classes}" source="1.5" target="1.5" debug="on"
+                   deprecation="false" optimize="false" failonerror="true">
+                <src path="@{src}"/>
+                <classpath refid="all-libs"/>
+                <classpath location="@{additional-classpath}"/>
+            </javac>
+
+            <copy todir="@{classes}" preservelastmodified="true">
+                <fileset dir="@{src}">
+                    <include name="**/*.properties"/>
+                    <include name="**/*.handlers"/>
+                    <include name="**/*.schemas"/>
+                    <include name="**/*.xml"/>
+                    <include name="**/*.dtd"/>
+                    <include name="**/*.xsd"/>
+                </fileset>
+            </copy>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="deploy">
+        <attribute name="name"/>
+        <sequential>
+            <java classname="org.openspaces.pu.container.servicegrid.deploy.Deploy" fork="false">                
+				<arg value="@{name}"/>
+			</java>
+        </sequential>
+    </macrodef>
+</project>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:os-core="http://www.openspaces.org/schema/core"
+       xmlns:os-events="http://www.openspaces.org/schema/events"
+       xmlns:os-remoting="http://www.openspaces.org/schema/remoting"
+       xmlns:os-sla="http://www.openspaces.org/schema/sla"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.openspaces.org/schema/core http://www.openspaces.org/schema/8.0/core/openspaces-core.xsd
+       http://www.openspaces.org/schema/events http://www.openspaces.org/schema/8.0/events/openspaces-events.xsd
+       http://www.openspaces.org/schema/remoting http://www.openspaces.org/schema/8.0/remoting/openspaces-remoting.xsd
+       http://www.openspaces.org/schema/sla http://www.openspaces.org/schema/8.0/sla/openspaces-sla.xsd">
+
+<!-- ========================================================================================================== -->
+
+	<!-- Enables the usage of @GigaSpaceContext annotation based injection. -->
+    <os-core:giga-space-context />
+
+    <os-core:giga-space-late-context />
+
+    <!--
+        A bean representing a space (an IJSpace implementation).
+    -->
+    <os-core:space id="space" url="/./processorSpace" />
+ 
+    <!--
+        Defines a distributed transaction manager (will be used for transactional operations with the space).
+    -->
+    <os-core:distributed-tx-manager id="transactionManager"/>
+
+    <!--
+        A wrapper bean to the space to provide OpenSpaces simplified space API (built on top of IJSpace/JavaSpace).
+    -->
+    <os-core:giga-space id="gigaSpace" space="space" tx-manager="transactionManager"/>
+
+    <os-core:giga-space id="clusteredGigaSpace" clustered="true" space="space" tx-manager="transactionManager"/>
+
+    <!--
+        The processor bean
+    -->
+    <bean id="helloProcessor" class="org.openspaces.example.helloworld.processor.Processor"/>
+
+    <!--
+        A Polling Container bean that performs repeated take operations from the space of objects matching a defined template.
+        (The take operations are by default blocking, which means a single take operation is waiting until a match is found)   
+        The template here instructs the polling container to take objects of type Message with their "info" attribute set to "Hello ".
+        When a match is found, the object is taken and passed to a listener bean - here the listener is the previously defined Processor bean.
+        This bean has the method processMessage(), which is invoked on the taken object, retuning a processed object.
+        After the object is processed, it is written back to the space by the Polling Container. 
+    -->
+    <os-events:polling-container id="helloProcessorPollingEventContainer" giga-space="gigaSpace">
+		<os-events:tx-support tx-manager="transactionManager"/>    
+		<os-events:trigger-operation-handler>
+			<bean class="org.openspaces.example.helloworld.common.MyTrigger">
+				<property name="clusteredGigaSpace" ref="clusteredGigaSpace"/>
+			</bean>
+		</os-events:trigger-operation-handler>
+		<os-core:template>
+			<bean class="org.openspaces.example.helloworld.common.Message">
+				<property name="info" value="Hello "/>
+			</bean>
+		</os-core:template>
+		<os-events:listener>
+			<os-events:annotation-adapter>
+				<os-events:delegate ref="helloProcessor"/>
+			</os-events:annotation-adapter>
+		</os-events:listener>
+	</os-events:polling-container>
+    
+<!-- ===================================================================================================== -->
+
+    <!--
+        The settings in the SLA bean define how will the Processing Unit be deployed
+		onto the Service Grid (These settings can be overriden when using the deployment wizard UI).
+        
+        For step three of the tutorial - deploying 1 instance, set:
+        number-of-instances="1"
+    	number-of-backups="0"   (Number of backups per instance)
+    	
+        For step three of the tutorial - deploying 1 instance with 1 backup, set:
+        number-of-instances="1"
+    	number-of-backups="1"
+        
+        For step four of the tutorial - deploying a partition of 3 instances, set:
+        number-of-instances="3"
+    	number-of-backups="0"
+    	
+        For step four of the tutorial - deploying a partition of 2 instances each with 1 backup (toatl 4 instances), set:
+        number-of-instances="2"
+    	number-of-backups="1"
+        
+        Setting maxInstancesPerVM = 1, mandates that an active instance and ITS backup won't run inside the same Grid Container
+    -->
+    <os-sla:sla cluster-schema="partitioned-sync2backup"
+    			number-of-instances="2"
+    			number-of-backups="1"
+                max-instances-per-vm="1">
+    </os-sla:sla>
+
+</beans>
