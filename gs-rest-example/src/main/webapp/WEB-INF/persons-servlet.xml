@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:oxm="http://www.springframework.org/schema/oxm"
+    xmlns:os-core="http://www.openspaces.org/schema/core"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.openspaces.org/schema/core http://www.openspaces.org/schema/core/openspaces-core.xsd
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+        http://www.springframework.org/schema/oxm http://www.springframework.org/schema/oxm/spring-oxm-3.0.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="properties">
+            <props>
+                <prop key="LOOKUPLOCATORS"/>
+            </props>
+        </property>
+    </bean>
+
+	<context:component-scan base-package="com.gigaspaces.rest.service" />
+
+    <!-- Enables the usage of @GigaSpaceContext annotation based injection. -->
+    <os-core:giga-space-context/>
+
+	<!-- bean class="org.springframework.web.servlet.view.BeanNameViewResolver" /-->
+	
+	<bean class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
+		<property name="mediaTypes">
+			<map>
+				<entry key="xml" value="application/xml"/>
+				<entry key="json" value="application/json"/>
+				<entry key="html" value="text/html"/>
+			</map>
+		</property>
+		<property name="viewResolvers">
+			<list>
+				<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+					<property name="prefix" value="/WEB-INF/jsp/"/>
+					<property name="suffix" value=".jsp"/>
+				</bean>
+				<bean class="org.springframework.web.servlet.view.BeanNameViewResolver"/>
+			</list>
+		</property>
+		<property name="defaultViews">
+		    <list>
+		      <bean class="org.springframework.web.servlet.view.json.MappingJacksonJsonView" />
+		    </list>
+		</property>
+	</bean>
+	<bean id="initializer" class="com.gigaspaces.rest.loader.Initializer" />
+	
+	<bean id="personView"
+		class="org.springframework.web.servlet.view.xml.MarshallingView">
+		<constructor-arg>
+			<bean class="org.springframework.oxm.xstream.XStreamMarshaller">
+				<property name="autodetectAnnotations" value="true"/>
+			</bean>
+		</constructor-arg>
+	</bean>
+
+    <os-core:space id="space"
+                   url="/./person-space?locators=${LOOKUPLOCATORS}"
+                   lookup-groups="${LOOKUPGROUPS}"/>
+
+    <os-core:giga-space id="gigaSpace" space="space"/>
+	
+</beans>
