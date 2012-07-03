@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+
+<project name="grid-manager" default="usage" basedir=".">
+
+    <property name="grid-manager-dir" location="${basedir}"/>
+	<property file="build.properties"/>
+
+	<condition property="gshome.dir" value="../../">
+        <not>
+            <isset property="gshome.dir"/>
+        </not>
+    </condition>
+	
+    <property name="grid-manager-src" value="${grid-manager-dir}/src"/>
+    <property name="grid-manager-classes" value="${grid-manager-dir}/classes"/>
+	<property name="grid-manager-jar" location="${grid-manager-dir}/dist/grid-manager.jar"/>
+	<property name="grid-manager-dep" value="${grid-manager-dir}/lib"/>
+
+    <path id="all-libs">
+        <fileset dir="${gshome.dir}/lib">
+            <include name="**/*.jar"/>
+            <exclude name="**/mule-os.jar" />
+        </fileset>
+        <fileset dir="${grid-manager-dep}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+    <target name="usage">
+        <echo message=""/>
+        <echo message="grid-manager build script"/>
+        <echo message="-----------------------------------------"/>
+        <echo message=""/>
+        <echo message="Among the available targets are:"/>
+        <echo message=""/>
+        <echo message="clean                    --> Cleans all output dirs"/>
+        <echo message="build                    --> Builds all; don't create JARs"/>
+        <echo message="dist                     --> Builds the distribution"/>        
+        <echo message=""/>
+    </target>
+
+    <target name="clean">
+        <delete dir="${grid-manager-classes}"/>				
+    </target>
+
+    <target name="build" depends="clean">
+        <build src="${grid-manager-src}" classes="${grid-manager-classes}" additional-classpath="${all-libs}"/>
+    </target>
+
+    <target name="dist" depends="build">
+	    <delete dir="${grid-manager-jar}"/>				
+		<jar basedir="${grid-manager-classes}" jarfile="${grid-manager-jar}"/>	
+    </target>    
+
+    <macrodef name="build">
+        <attribute name="src"/>
+        <attribute name="classes"/>
+        <attribute name="additional-classpath"/>
+        <sequential>
+            <mkdir dir="@{classes}"/>
+
+            <javac destdir="@{classes}" source="1.5" target="1.5" debug="on"
+                   deprecation="false" optimize="false" failonerror="true">
+                <src path="@{src}"/>
+                <classpath refid="all-libs"/>
+                <classpath location="@{additional-classpath}"/>
+            </javac>
+
+            <copy todir="@{classes}" preservelastmodified="true">
+                <fileset dir="@{src}">
+                    <include name="**/*.properties"/>
+                    <include name="**/*.handlers"/>
+                    <include name="**/*.schemas"/>
+                    <include name="**/*.xml"/>
+                    <include name="**/*.dtd"/>
+                    <include name="**/*.xsd"/>
+                </fileset>
+            </copy>
+        </sequential>
+    </macrodef>
+</project>

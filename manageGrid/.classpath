@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="lib" path="C:/DevTools/GigaSpaces/gigaspaces-xap-premium-9.0.0-ga/lib/required/com.springsource.org.aopalliance-1.0.0.jar"/>
+	<classpathentry kind="lib" path="C:/DevTools/GigaSpaces/gigaspaces-xap-premium-9.0.0-ga/lib/required/commons-logging.jar"/>
+	<classpathentry kind="lib" path="C:/DevTools/GigaSpaces/gigaspaces-xap-premium-9.0.0-ga/lib/required/gs-openspaces.jar" sourcepath="C:/DevTools/GigaSpaces/gigaspaces-xap-premium-9.0.0-ga/lib/optional/openspaces/gs-openspaces-src.zip"/>
+	<classpathentry kind="lib" path="C:/DevTools/GigaSpaces/gigaspaces-xap-premium-9.0.0-ga/lib/required/gs-runtime.jar" sourcepath="C:/Dev/GigaSpaces/src/8.0.6/gigaspaces/src/java"/>
+	<classpathentry kind="lib" path="C:/DevTools/GigaSpaces/gigaspaces-xap-premium-9.0.0-ga/lib/required/org.springframework.aop-3.1.1.RELEASE.jar"/>
+	<classpathentry kind="lib" path="C:/DevTools/GigaSpaces/gigaspaces-xap-premium-9.0.0-ga/lib/required/org.springframework.asm-3.1.1.RELEASE.jar"/>
+	<classpathentry kind="lib" path="C:/DevTools/GigaSpaces/gigaspaces-xap-premium-9.0.0-ga/lib/required/org.springframework.aspects-3.1.1.RELEASE.jar"/>
+	<classpathentry kind="lib" path="C:/DevTools/GigaSpaces/gigaspaces-xap-premium-9.0.0-ga/lib/required/org.springframework.beans-3.1.1.RELEASE.jar"/>
+	<classpathentry kind="lib" path="C:/DevTools/GigaSpaces/gigaspaces-xap-premium-9.0.0-ga/lib/required/org.springframework.context.support-3.1.1.RELEASE.jar"/>
+	<classpathentry kind="lib" path="C:/DevTools/GigaSpaces/gigaspaces-xap-premium-9.0.0-ga/lib/required/org.springframework.context-3.1.1.RELEASE.jar"/>
+	<classpathentry kind="lib" path="C:/DevTools/GigaSpaces/gigaspaces-xap-premium-9.0.0-ga/lib/required/org.springframework.core-3.1.1.RELEASE.jar"/>
+	<classpathentry kind="lib" path="C:/DevTools/GigaSpaces/gigaspaces-xap-premium-9.0.0-ga/lib/required/org.springframework.expression-3.1.1.RELEASE.jar"/>
+	<classpathentry kind="lib" path="C:/DevTools/GigaSpaces/gigaspaces-xap-premium-9.0.0-ga/lib/required/org.springframework.transaction-3.1.1.RELEASE.jar"/>
+	<classpathentry kind="lib" path="C:/Dev/Barclays/manageGrid/lib/jcommander-1.26.jar"/>
+	<classpathentry kind="output" path="classes"/>
+</classpath>

@@ -1,0 +1,5 @@
+call setExampleEnv.bat
+
+set LOOKUPGROUPS=gs
+set NIC_ADDR=192.168.56.1
+set LOOKUPLOCATORS=%NIC_ADDR%,127.0.0.1
