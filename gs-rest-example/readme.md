@@ -27,7 +27,7 @@ http://127.0.0.1:8080/gs-rest-example/personsearch/ or http://127.0.0.1:8080/gs-
  
 As mentioned above this web service also supports xml and json data formats which you can trigger by passeing the Content type in header. 
 
-If you are using curl you can modify headers using following syntax,
-curl -HAccept:application/xml http://127.0.0.1:8080/gs-rest-example/personsearch/
+If you are using curl you can modify headers using following syntax, <p>
+<code>curl -HAccept:application/xml http://127.0.0.1:8080/gs-rest-example/personsearch/</code>
 
 If you use Google Chrome, there is a "Advanced REST client Application" extension available here, https://chrome.google.com/webstore/detail/hgmloofddffdnphfgcellkdfbfbjeloo. This extension also lets you pass additional parameters in the headers (and content type). For e.g., pass "Accept: application/xml" to get the data in xml format. This chrome extension also has other features (save requests) that make it really easy to access and test your RESTFul web services.
