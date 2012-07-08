@@ -2,7 +2,7 @@
 === GigaSpaces RESTFul WebServices Example ===
 ===============================================
 
-<h1> 1. Overview </h1>
+# Overview
 
 This is a WebServices example based on Spring MVC that can run in GigaSpaces Web Container. App stores a list of Persons and shows how to expose this information as RESTFul service.
 
@@ -10,17 +10,17 @@ It is inspired by the Developer Works article here, http://www.ibm.com/developer
 
 Example also uses ContentNegotiatingViewResolver which lets you pick the format of the data served by the webservice at run time. It supports HTML/XML or JSON format.
 
-<h1> 2. Project Structure </h1> 
+# Project Structure
 
 This example is a maven project and is a typical Spring MVC web application. For simplicity, GigaSpace bean defined in the servlet start the space.
 	    
-<h1> 3. Build AND Deployment </h1>
+# Build AND Deployment 
 
 The example uses Maven 2 as its build tool. Just follow the standard build lifecycle phases to construct the WAR (gs-rest-example.war).
 
 You can run the example by launching the Service Grid (use gs-agent to start Service grid), and deploying the WAR using the GS-UI or GS CLI.
 
-<h1> 4. Accessing the Web Application </h1>
+# Accessing the Web Application
 
 Invoke for html format of the WebService using,
 http://127.0.0.1:8080/gs-rest-example/personsearch/ or http://127.0.0.1:8080/gs-rest-example/personsearch/person/1 to see the output.
