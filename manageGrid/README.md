@@ -3,15 +3,16 @@ manageGrid project
 ==================
 
 manageGrid project is an implementation of the grid life cycle steps using GigaSpaces Admin API. Typical cluster management involves following lifecycle steps and manageGrid implements these steps,
-* start 	 – Start Grid Infrastructure on all the machines and deploy the services
-*	stop 	   – Undeploy the services and stop the Grid infrastructure on all the machines
-*	reStart  – Stop and Start the Grid infrastructure
-*	startOne – Start Grid infrastructure on one machine
-*	stopOne  – Stop Grid infrastructure on one machine
+* start    - Start Grid Infrastructure on all the machines and deploy the services
+* stop     - Undeploy the services and stop the Grid infrastructure on all the machines
+* reStart  - Stop and Start the Grid infrastructure
+* startOne - Start Grid infrastructure on one machine
+* stopOne  - Stop Grid infrastructure on one machine
+* status   - Status of the Grid including mapping of processing unit instances to machines and the GSC's
 
 ## Usage
 
-manageGrid can be used to manage the Grid Infrastructure including GSM's and GSC's.  
+manageGrid can be used to manage the Grid Infrastructure including GSM's, LUS's and GSC's.  
 It expects the agents to be already started on the machines that are part of the grid. Atleast one of the Lookup Servers should be started along with the agent.
 
 ## Configuration
@@ -48,9 +49,8 @@ Typical parameters passed in this file include,
 ## Example
 Project includes an example configuration for GigaSapces maven basic application deployed across a two node cluster. 
 * maven basic application is very similar to the helloworld example that comes with GigaSpaces and includes two processing units, a processor and a feeder.  
-* Example folder also includes the scripts for starting the agents on two machines. Each of these agents also starts the Lookup Service.  
+* Example folder also includes the scripts for starting the agents on two machines.  
+* Each of these agents also starts the Lookup Service.  
 * Example scripts for each of the grid management lifecylce are also included.  
-
-
 
 
