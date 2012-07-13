@@ -1,4 +1,4 @@
-call setExampleEnv.bat
+call ..\setExampleEnv.bat
 
 set LOOKUPGROUPS=gs
 set NIC_ADDR=192.168.56.1
