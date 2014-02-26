@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:os-core="http://www.openspaces.org/schema/core"
+       xmlns:os-events="http://www.openspaces.org/schema/events"
+       xmlns:os-remoting="http://www.openspaces.org/schema/remoting"
+       xmlns:os-sla="http://www.openspaces.org/schema/sla"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+       http://www.openspaces.org/schema/core http://www.openspaces.org/schema/9.1/core/openspaces-core.xsd
+       http://www.openspaces.org/schema/events http://www.openspaces.org/schema/9.1/events/openspaces-events.xsd
+       http://www.openspaces.org/schema/remoting http://www.openspaces.org/schema/9.1/remoting/openspaces-remoting.xsd
+       http://www.openspaces.org/schema/sla http://www.openspaces.org/schema/9.1/sla/openspaces-sla.xsd">
+
+
+    <!-- Spring property configurer which allows us to use system properties (such as user.name). -->
+    <bean id="propertiesConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="properties">
+            <props>
+                <prop key="defaultDelay">25</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!-- Enables the usage of @GigaSpaceContext annotation based injection. -->
+    <os-core:giga-space-context/>
+
+    <!-- A bean representing a space (an IJSpace implementation).
+         Note, we perform a lookup on the space since we are working against a remote space. -->
+    <os-core:space id="space" url="jini://*/*/space" />
+
+    <!-- OpenSpaces simplified space API built on top of IJSpace/JavaSpace. -->
+    <os-core:giga-space id="gigaSpace" space="space"/>
+
+	<bean id="bookingRequestDAO" class="com.mycompany.app.dao.impl.BookingRequestDAO"/>
+	<bean id="searchRequestDAO" class="com.mycompany.app.dao.impl.SearchRequestDAO"/>
+
+    <!-- The Data feeder bean, writing new Data objects to the space in a constant interval. -->
+    <bean id="feeder" class="com.mycompany.app.feeder.Feeder" abstract="true">
+		<property name="defaultDelay" value="${defaultDelay}" />
+	</bean>
+    
+    <bean id="bookingRequestFeeder" class="com.mycompany.app.feeder.BookingRequestFeeder" parent="feeder" depends-on="gigaSpace">
+    	<property name="bookingRequestDAO" ref="bookingRequestDAO" />
+    </bean>
+    
+    <bean id="searchRequestFeeder" class="com.mycompany.app.feeder.SearchRequestFeeder" parent="feeder" depends-on="gigaSpace">
+    	<property name="searchRequestDAO" ref="searchRequestDAO" />
+    </bean>
+    
+</beans>

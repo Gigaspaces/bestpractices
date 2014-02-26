@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:os-core="http://www.openspaces.org/schema/core"
+       xmlns:os-events="http://www.openspaces.org/schema/events"
+       xmlns:os-remoting="http://www.openspaces.org/schema/remoting"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+       					   http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+					       http://www.openspaces.org/schema/core http://www.openspaces.org/schema/9.1/core/openspaces-core.xsd
+					       http://www.openspaces.org/schema/events http://www.openspaces.org/schema/9.1/events/openspaces-events.xsd
+					       http://www.openspaces.org/schema/remoting http://www.openspaces.org/schema/9.1/remoting/openspaces-remoting.xsd">
+
+    <!-- Spring property configurer which allows us to use system properties (such as user.name). -->
+    <bean id="propertiesConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="properties">
+            <props>
+            	<!--  Offset timeSeriesInterval with Graphical UI rendering interval at least 200ms to account for data availability -->
+                <prop key="timeSeriesInterval">1800</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <context:component-scan base-package="com.mycompany.app.dao.impl" />
+	
+	<context:annotation-config />
+
+    <!-- Enables the usage of @GigaSpaceContext annotation based injection. -->
+    <os-core:giga-space-context/>
+ 
+    <os-core:space id="space" url="/./space" >
+        <os-core:properties>
+            <props>
+                <prop key="space-config.QueryProcessor.date_format">yyyy-MM-dd HH:mm:ss</prop>
+                <prop key="space-config.QueryProcessor.time_format">HH:mm:ss</prop>
+            </props>
+        </os-core:properties>
+    </os-core:space>
+ 
+    <!-- Defines a distributed transaction manager. -->
+     <os-core:distributed-tx-manager id="transactionManager"/>
+
+    <!-- OpenSpaces simplified space API built on top of IJSpace/JavaSpace. -->
+    <os-core:giga-space id="gigaSpace" space="space" tx-manager="transactionManager"/>
+
+	<!-- DAO beans -->
+	<bean id="bookingTimeSeriesDAO" class="com.mycompany.app.dao.impl.BookingTimeSeriesDAO"/>
+	<bean id="searchTimeSeriesDAO" class="com.mycompany.app.dao.impl.SearchTimeSeriesDAO"/>
+    
+	<!-- Data Event Processor beans -->
+    <bean id="bookingRequestProcessor" class="com.mycompany.app.processor.BookingRequestProcessor">
+    	<property name="timeSeriesInterval" value="${timeSeriesInterval}" />
+    	<property name="bookingTimeSeriesDAO" ref="bookingTimeSeriesDAO" />
+    </bean>
+
+	<bean id="searchRequestProcessor" class="com.mycompany.app.processor.SearchRequestProcessor">
+    	<property name="timeSeriesInterval" value="${timeSeriesInterval}" />
+    	<property name="searchTimeSeriesDAO" ref="searchTimeSeriesDAO" />
+    </bean>
+
+    <!--
+        A polling event container that perfoms (by default) polling take operations against
+        the space using the provided template (in our case, and the non processed data objects).
+        Once a match is found, the data processor bean event listener is triggered using the
+        annotation adapter.
+    -->
+    <os-events:polling-container id="bookingRequestProcessorPollingEventContainer" giga-space="gigaSpace">
+        <os-events:tx-support tx-manager="transactionManager"/>
+        <os-core:template>
+            <bean class="com.mycompany.app.common.domain.BookingRequest">
+                <property name="processed" value="false"/> 
+            </bean>
+        </os-core:template>
+        <os-events:listener>
+            <os-events:annotation-adapter>
+                <os-events:delegate ref="bookingRequestProcessor"/>
+            </os-events:annotation-adapter>
+        </os-events:listener>
+    </os-events:polling-container>
+    
+    <os-events:polling-container id="searchRequestProcessorPollingEventContainer" giga-space="gigaSpace">
+        <os-events:tx-support tx-manager="transactionManager"/>
+        <os-core:template>
+            <bean class="com.mycompany.app.common.domain.SearchRequest">
+                <property name="processed" value="false"/> 
+            </bean>
+        </os-core:template>
+        <os-events:listener>
+            <os-events:annotation-adapter>
+                <os-events:delegate ref="searchRequestProcessor"/>
+            </os-events:annotation-adapter>
+        </os-events:listener>
+    </os-events:polling-container>
+    
+</beans>
