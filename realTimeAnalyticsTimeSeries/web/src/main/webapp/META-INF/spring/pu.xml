@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:os-core="http://www.openspaces.org/schema/core"
+       xmlns:os-events="http://www.openspaces.org/schema/events"
+       xmlns:os-remoting="http://www.openspaces.org/schema/remoting"
+       xmlns:os-jms="http://www.openspaces.org/schema/jms"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       					   http://www.openspaces.org/schema/core http://www.openspaces.org/schema/9.1/core/openspaces-core.xsd
+      					   http://www.openspaces.org/schema/events http://www.openspaces.org/schema/9.1/events/openspaces-events.xsd
+  				   	       http://www.openspaces.org/schema/remoting http://www.openspaces.org/schema/9.1/remoting/openspaces-remoting.xsd
+   					       http://www.openspaces.org/schema/jms http://www.openspaces.org/schema/9.1/jms/openspaces-jms.xsd">
+        
+	
+	<os-core:giga-space-context/>
+	
+    <os-core:space id="space" url="jini://*/*/space"/>
+	 
+    <os-core:giga-space id="gigaSpace" space="space"/>
+    
+    <bean id="taskDelegate" class="com.mycompany.app.web.delegate.TaskDelegate"/>
+    
+</beans>
