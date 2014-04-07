@@ -97,7 +97,7 @@ public class SpaceClassExportTask implements DistributedTask<SerialList, List<St
 		this.export = export;
 	}
 
-	public SpaceClassExportTask(SpaceDataExportImportMain exporter) {
+	public SpaceClassExportTask(SpaceDataImportExportMain exporter) {
 
 		this(exporter.getClasses(), exporter.getExport(), exporter.getBatch()); 
 	}

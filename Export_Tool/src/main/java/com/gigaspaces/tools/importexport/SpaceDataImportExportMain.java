@@ -18,7 +18,7 @@ import com.gigaspaces.async.AsyncFuture;
  * @author jb
  *
  */
-public class SpaceDataExportImportMain {
+public class SpaceDataImportExportMain {
 
 	// default parameters
 	private static String LOCALHOST = "localhost";
@@ -70,7 +70,7 @@ public class SpaceDataExportImportMain {
 	private List<Integer> partitions;
 	private GigaSpace space;
 	
-	public SpaceDataExportImportMain() {
+	public SpaceDataImportExportMain() {
 
 		locators = new ArrayList<String>();
 		groups = new ArrayList<String>();
@@ -150,7 +150,7 @@ public class SpaceDataExportImportMain {
 	 */
 	public static void main(String[] args) {
 		
-		SpaceDataExportImportMain exporter = new SpaceDataExportImportMain();
+		SpaceDataImportExportMain exporter = new SpaceDataImportExportMain();
 
 		exporter.init(args);
 		exporter.verify();
