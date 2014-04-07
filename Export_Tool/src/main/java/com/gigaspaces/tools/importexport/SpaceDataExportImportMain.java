@@ -1,7 +1,7 @@
 /**
  * Aug 1, 2013
  */
-package com.gigaspaces.support.export;
+package com.gigaspaces.tools.importexport;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ import com.gigaspaces.async.AsyncFuture;
  * @author jb
  *
  */
-public class SpaceClassExportTool {
+public class SpaceDataExportImportMain {
 
 	// default parameters
 	private static String LOCALHOST = "localhost";
@@ -70,7 +70,7 @@ public class SpaceClassExportTool {
 	private List<Integer> partitions;
 	private GigaSpace space;
 	
-	public SpaceClassExportTool() {
+	public SpaceDataExportImportMain() {
 
 		locators = new ArrayList<String>();
 		groups = new ArrayList<String>();
@@ -150,7 +150,7 @@ public class SpaceClassExportTool {
 	 */
 	public static void main(String[] args) {
 		
-		SpaceClassExportTool exporter = new SpaceClassExportTool();
+		SpaceDataExportImportMain exporter = new SpaceDataExportImportMain();
 
 		exporter.init(args);
 		exporter.verify();

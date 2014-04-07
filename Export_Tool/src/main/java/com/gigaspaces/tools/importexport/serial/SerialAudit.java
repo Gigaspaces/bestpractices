@@ -1,4 +1,4 @@
-package com.gigaspaces.support.export.serial;
+package com.gigaspaces.tools.importexport.serial;
 
 import java.io.Serializable;
 

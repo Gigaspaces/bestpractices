@@ -1,4 +1,4 @@
-package com.gigaspaces.support.export;
+package com.gigaspaces.tools.importexport;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -12,7 +12,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -33,15 +32,14 @@ import com.gigaspaces.client.iterator.GSIteratorConfig;
 import com.gigaspaces.client.iterator.IteratorScope;
 import com.gigaspaces.document.SpaceDocument;
 import com.gigaspaces.logger.Constants;
-import com.gigaspaces.metadata.SpacePropertyDescriptor;
 import com.gigaspaces.metadata.SpaceTypeDescriptor;
 import com.gigaspaces.metadata.SpaceTypeDescriptorBuilder;
 import com.gigaspaces.metadata.index.SpaceIndex;
 import com.gigaspaces.metadata.index.SpaceIndexFactory;
 import com.gigaspaces.metadata.index.SpaceIndexType;
-import com.gigaspaces.support.export.serial.SerialAudit;
-import com.gigaspaces.support.export.serial.SerialList;
-import com.gigaspaces.support.export.serial.SerialMap;
+import com.gigaspaces.tools.importexport.serial.SerialAudit;
+import com.gigaspaces.tools.importexport.serial.SerialList;
+import com.gigaspaces.tools.importexport.serial.SerialMap;
 import com.j_spaces.core.admin.IRemoteJSpaceAdmin;
 import com.j_spaces.core.admin.SpaceRuntimeInfo;
 import com.j_spaces.core.client.GSIterator;
@@ -99,7 +97,7 @@ public class SpaceClassExportTask implements DistributedTask<SerialList, List<St
 		this.export = export;
 	}
 
-	public SpaceClassExportTask(SpaceClassExportTool exporter) {
+	public SpaceClassExportTask(SpaceDataExportImportMain exporter) {
 
 		this(exporter.getClasses(), exporter.getExport(), exporter.getBatch()); 
 	}
