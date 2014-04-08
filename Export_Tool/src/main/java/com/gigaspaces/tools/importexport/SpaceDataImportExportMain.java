@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import org.openspaces.core.GigaSpace;
 import org.openspaces.core.GigaSpaceConfigurer;
 import org.openspaces.core.space.UrlSpaceConfigurer;
+import org.springframework.dao.DataAccessException;
 
 import com.gigaspaces.async.AsyncFuture;
 
@@ -29,8 +30,8 @@ public class SpaceDataImportExportMain {
 	
 	public static enum Parameters {
 		
-		EXPORT('e', "export", "performs space class export"),
-        IMPORT('i', "import", "performs space class import"),
+		EXPORT('e', "export", "performs space class export - specify i or e"),
+		IMPORT('i', "import", "performs space class import - specify i or e"),
 		GROUP('g', "groups", "the names of lookup groups - comma separated"),
 		LOCATE('l', "locators", "the names of lookup services hosts - comma separated"),
 		SPACE('s', "space", "the name of the space"),
@@ -62,7 +63,7 @@ public class SpaceDataImportExportMain {
 	private Boolean export = false;
 	private Boolean imp = true;
 	private Boolean test = false;
-	private Integer batch = 1000;
+	private Integer batch = 10;
 	
 	private List<String> locators;
 	private List<String> groups;
@@ -164,10 +165,24 @@ public class SpaceDataImportExportMain {
 
 			AsyncFuture<List<String>> results = null;
 			if (exporter.getPartitions().isEmpty()) {
+				// we need to get the list of classes that are in the space
+				// and then try and load them from here if they exist
+				if (exporter.getImp()) {
+					results = exporter.getSpace().execute(new SpaceClassExportTask(0));
+					exporter.preloadSpaceClasses(results.get());
+				}
+				
 				results = exporter.getSpace().execute(task); 
 			}
 			else {
 				Object[] spacePartitions = (Object[]) exporter.getPartitions().toArray(new Integer[0]);
+				
+				// we need to get the list of classes that are in the space
+				// and then try and load them from here if they exist
+				if (exporter.getImp()) {
+					results = exporter.getSpace().execute(new SpaceClassExportTask(0));
+					exporter.preloadSpaceClasses(results.get());
+				}
 				results = exporter.getSpace().execute(task, spacePartitions); 
 			}
 			System.out.print("executing tasks");
@@ -179,7 +194,6 @@ public class SpaceDataImportExportMain {
 			
 			// report the results here
 			for (String result : results.get()) {
-//				logger.info((exporter.getExport() ? "exporter " : " importer ") + result);
 				logger.info(result);
 			}
 			
@@ -191,6 +205,24 @@ public class SpaceDataImportExportMain {
 
 	}
 
+	public void preloadSpaceClasses(List<String> classNames) {
+		
+		for (String className : classNames) {
+			try {
+				Class<?> clazz = Class.forName(className);
+				space.read(clazz.newInstance());
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (DataAccessException e) {
+				e.printStackTrace();
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	public static void showHelpMessage() {
 		
 		System.out.println("GigaSpace Test Platform");
@@ -282,6 +314,14 @@ public class SpaceDataImportExportMain {
 
 	public void setExport(Boolean export) {
 		this.export = export;
+	}
+	
+	public Boolean getImp() {
+		return imp;
+	}
+
+	public void setImp(Boolean imp) {
+		this.imp = imp;
 	}
 
 	public void setSpace(GigaSpace space) { 

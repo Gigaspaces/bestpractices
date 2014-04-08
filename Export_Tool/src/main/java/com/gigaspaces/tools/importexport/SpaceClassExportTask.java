@@ -10,8 +10,11 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -19,8 +22,9 @@ import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import net.jini.core.entry.UnusableEntryException;
-
+import com.gigaspaces.tools.importexport.serial.SerialAudit;
+import com.gigaspaces.tools.importexport.serial.SerialList;
+import com.gigaspaces.tools.importexport.serial.SerialMap;
 import org.openspaces.core.GigaSpace;
 import org.openspaces.core.cluster.ClusterInfo;
 import org.openspaces.core.cluster.ClusterInfoAware;
@@ -37,9 +41,6 @@ import com.gigaspaces.metadata.SpaceTypeDescriptorBuilder;
 import com.gigaspaces.metadata.index.SpaceIndex;
 import com.gigaspaces.metadata.index.SpaceIndexFactory;
 import com.gigaspaces.metadata.index.SpaceIndexType;
-import com.gigaspaces.tools.importexport.serial.SerialAudit;
-import com.gigaspaces.tools.importexport.serial.SerialList;
-import com.gigaspaces.tools.importexport.serial.SerialMap;
 import com.j_spaces.core.admin.IRemoteJSpaceAdmin;
 import com.j_spaces.core.admin.SpaceRuntimeInfo;
 import com.j_spaces.core.client.GSIterator;
@@ -60,13 +61,13 @@ public class SpaceClassExportTask implements DistributedTask<SerialList, List<St
 	
 	private static String COLON = ":";
 	private static String DOT = ".";
-		
+
 	private final static java.util.logging.Logger logger = java.util.logging.Logger.getLogger(Constants.LOGGER_COMMON);
 	
 	private List<String> classNames;
 	private Boolean export;
 	private Integer batch;
-	private SerialAudit audit;
+	private SerialList audit;
 	
 	// we don't really use this other than to get the groups and locators
 	@TaskGigaSpace
@@ -97,13 +98,22 @@ public class SpaceClassExportTask implements DistributedTask<SerialList, List<St
 		this.export = export;
 	}
 
+	// special case - we need to find out what classes are known so that 
+	// we can check and make sure that they're in the space
+	public SpaceClassExportTask(Integer batch) {
+
+		classNames = new ArrayList<String>();
+		audit = new SerialList();
+		this.batch = batch;
+	}
+
 	public SpaceClassExportTask(SpaceDataImportExportMain exporter) {
 
 		this(exporter.getClasses(), exporter.getExport(), exporter.getBatch()); 
 	}
 	
 
-	public SpaceClassExportTask(List<String> className, Boolean export, Integer batch) {
+	public SpaceClassExportTask(List<String> classNames, Boolean export, Integer batch) {
 
 		this(export);
 		this.classNames.addAll(classNames);
@@ -118,6 +128,13 @@ public class SpaceClassExportTask implements DistributedTask<SerialList, List<St
 
 		// writes the partition id with the thread id in the logs
 //		audit.setPartition(clusterInfo.getInstanceId());
+		
+		if (batch == 0) {
+			SerialList names = getLocalClassFileNames(true);
+//			System.out.println("import pre-processing");
+//			System.out.println(names.toString());
+			return names;
+		}
 		
 		if (export) {
 			// get a list of classes and the number of entries of each class
@@ -159,23 +176,62 @@ public class SpaceClassExportTask implements DistributedTask<SerialList, List<St
 				writeObjects(classNames);
 		}
 		else {
+			List<String> fileNames = getLocalClassFileNames(false);
+/*			new ArrayList<String>();
 			File[] files = new File(DOT).listFiles(new ImportClassFileFilter(clusterInfo.getInstanceId()));
-			List<String> fileNames = new ArrayList<String>();
 			for (File file : files) {
 				if (! classNames.isEmpty()) {
-					// remove elements from the file list
+					// remove elements from the file list if they weren't specified
 					if (classNames.contains(getClassNameFromImportFile(file))) 
 						fileNames.add(file.toString());
 				}
 				else fileNames.add(file.toString());
 			}
-
+*/
 			logger.info("importer found " + fileNames.size() + " files");
 			audit.add("importer found " + fileNames.size() + " files");
 			if (fileNames.size() > 0)
 				readObjects(fileNames);
 		}
 		return audit;
+	}
+	
+	// we're only concerned with class names, not space document collections
+	private SerialList getLocalClassFileNames(Boolean classesOnly) {
+		
+		SerialList fileNames = new SerialList();
+		File[] files = new File(DOT).listFiles(new ImportClassFileFilter(clusterInfo.getInstanceId()));
+		for (File file : files) {
+			if (classesOnly) {
+				String className = getClassNameFromImportFile(file);
+				// we're not worried about space ddocuments
+				if ( ! className.contains(".")) continue;
+				else {
+					if (! classNames.isEmpty()) {
+						// remove elements from the file list if they weren't specified
+						if (classNames.contains(className)) {
+							fileNames.add(className);
+						}
+					}
+					else {
+						fileNames.add(className);
+					}
+				}
+			}
+			else {
+				if (! classNames.isEmpty()) {
+					// remove elements from the file list if they weren't specified
+					if (classNames.contains(getClassNameFromImportFile(file))) {
+						fileNames.add(file.toString());
+					}
+				}
+				else {
+					fileNames.add(file.toString());
+				}
+			}
+		}
+
+		return fileNames;
 	}
 	
 	private String getClassNameFromImportFile(File file) {
@@ -200,8 +256,15 @@ public class SpaceClassExportTask implements DistributedTask<SerialList, List<St
 		for (AsyncResult<SerialList> arg : args) {
 			if (arg.getException() == null) {
 				if (arg.getResult() != null) {
-					for (String str : arg.getResult()) 
-						result.add(str);
+					for (String str : arg.getResult()) {
+						// import pre-processing doesn't want duplicates
+						if (batch == 0) {
+							if (! result.contains(str)) result.add(str);
+						}
+						else {
+							result.add(str);
+						}
+					}
 				}
 			}
 			else {
@@ -294,7 +357,7 @@ public class SpaceClassExportTask implements DistributedTask<SerialList, List<St
 		}
 		for (SpaceClassImportThread thread : threadList) {
 			for (String line : thread.getMessage()) {
-				audit.add(line, false);
+				((SerialAudit) audit).add(line, false);
 			}
 		}
 		logger.info("finished reading " + classList.size() + " files");
@@ -308,6 +371,7 @@ public class SpaceClassExportTask implements DistributedTask<SerialList, List<St
 		private String className;
 		private Integer batch = 1000;
 		private Integer partitionId;
+		private Map<String, Integer> classCounts;
 		private SerialAudit lines;
 
 		public SpaceClassExportThread(GigaSpace space, File file, String className, Integer batch, Integer partitionId) {
@@ -318,6 +382,20 @@ public class SpaceClassExportTask implements DistributedTask<SerialList, List<St
 			this.batch = batch;
 			this.partitionId = partitionId;
 			this.lines = new SerialAudit();
+
+			try {
+				IRemoteJSpaceAdmin remoteAdmin = (IRemoteJSpaceAdmin) space.getSpace().getAdmin();
+				Object classList[] = remoteAdmin.getRuntimeInfo().m_ClassNames.toArray();
+				List numOfEntries = remoteAdmin.getRuntimeInfo().m_NumOFEntries;
+				classCounts = new HashMap<String, Integer>();
+				for (int o = 0; o < classList.length; o++) {
+					classCounts.put(classList[o].toString(), (Integer) numOfEntries.get(o));
+					logger.fine("count: "  + classList[o].toString() + " = " + numOfEntries.get(o).toString());
+				}
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 		public SerialAudit getMessage() {
@@ -350,14 +428,14 @@ public class SpaceClassExportTask implements DistributedTask<SerialList, List<St
 		
 		private SerialMap getTypeDescriptorMap(String className) {
 			
-			SerialMap documentMap = new SerialMap();
+			SerialMap typeMap = new SerialMap();
 			
 			SpaceTypeDescriptor type = space.getTypeManager().getTypeDescriptor(className);
 
 			if (type.getIdPropertyName() != null) 
-				documentMap.put(SPACEID, type.getIdPropertyName());
+				typeMap.put(SPACEID, type.getIdPropertyName());
 			if (type.getRoutingPropertyName() != null)
-				documentMap.put(ROUTING, type.getRoutingPropertyName());
+				typeMap.put(ROUTING, type.getRoutingPropertyName());
 			
 			SerialMap indexMap = new SerialMap();
 			Map<String, SpaceIndex> indexes = type.getIndexes();
@@ -376,12 +454,26 @@ public class SpaceClassExportTask implements DistributedTask<SerialList, List<St
 
 				((SerialList) indexMap.get(indexes.get(key).getIndexType().name())).add(key);
 			}
+			
+			// if it's a POJO we should include its properties
+/*			if (type.isConcreteType()) {
+				for (int p = 0; p < type.getNumOfFixedProperties(); p++) {
+					SpacePropertyDescriptor prop = type.getFixedProperty(p);
+					typeMap.put(prop.getName(), prop.getType());
+				}
+			}
+*/			
 			// always write this out, even if it's empty
-			documentMap.put(INDEX, indexMap);
+			typeMap.put(INDEX, indexMap);
 
-			return documentMap;
-		}
+			return typeMap;
+		}		
 		
+		private SpaceTypeDescriptor getTypeDescriptor(String className) {
+			
+			return space.getTypeManager().getTypeDescriptor(className);
+		}
+
 		@Override
 		public void run() {
 
@@ -393,8 +485,9 @@ public class SpaceClassExportTask implements DistributedTask<SerialList, List<St
 					String type = (SpaceDocument.class.isInstance(template) ? Type.DOC.getValue() : Type.CLASS.getValue());
 					logger.info("reading space " + type + " : " + className);
 					lines.add("reading space " + type + " : " + className);
-					Integer count = space.count(template);
-
+					
+					Integer count = classCounts.get(className);
+					
 					if (count > 0) {
 						logger.info("space partition contains " + count + " objects");
 						lines.add("space partition contains " + count + " objects");
@@ -409,12 +502,24 @@ public class SpaceClassExportTask implements DistributedTask<SerialList, List<St
 						// write some header data
 						oos.writeUTF(SpaceDocument.class.isInstance(template) ? DOCUMENT : className);
 						oos.writeInt(count);
-						// space document needs to write type descriptor
+						// we don't need to write batch size because the importer doesn't need to read it
+						// importer just reads in arrays of objects until the count of the objects exceeds count
+//						oos.writeInt(batch);
+						
+						logger.info(SpaceDocument.class.isInstance(template) ? DOCUMENT : className + " : " + count + "/" + batch);
+
+						// space document needs to write type name
 						if (Type.DOC.getValue().equals(type))
 							oos.writeUTF(className);
 						
 						// we could serialize *all* type descriptors
-						oos.writeObject(getTypeDescriptorMap(className));
+						SpaceTypeDescriptor typeDescriptor = getTypeDescriptor(className);
+						if (typeDescriptor != null) {
+							oos.writeObject(typeDescriptor);
+						}
+						else {
+							logger.severe("could not get type descriptor for :" + className);
+						}
 
 						// get the objects and write them out
 						GSIteratorConfig config = new GSIteratorConfig();
@@ -424,18 +529,37 @@ public class SpaceClassExportTask implements DistributedTask<SerialList, List<St
 						GSIterator iterator = null;
 
 						try {
+							
 							iterator = new GSIterator(space.getSpace(), templates, config);
 
 							logger.info("read " + count + " objects from space partition");
 							lines.add("read " + count + " objects from space partition");
 
 							Long start = System.currentTimeMillis();
-							while (iterator.hasNext()) oos.writeObject(iterator.next());
+
+							int b = batch;
+							int c = 0;
+							List<Serializable> outputs = new ArrayList<Serializable>();
+							// use batch size and write arrays
+							while (c < count) {
+								while (iterator.hasNext() && b-- > 0) {
+									outputs.add((Serializable) iterator.next());
+								}
+								oos.writeObject(outputs.toArray(new Serializable[0]));
+								c += outputs.size();
+								outputs.clear();
+								b = batch;
+							}
+/*							
+							while (iterator.hasNext()) {
+								oos.writeObject(iterator.next());
+							}
+*/							
 							Long duration = (System.currentTimeMillis() - start);
 
 							logger.info("export operation took " + duration + " millis");
 							lines.add("export operation took " + duration + " millis");
-						} catch (UnusableEntryException e) {
+						} catch (Exception e) {
 							e.printStackTrace();
 						}
 						// close the output file
@@ -525,12 +649,21 @@ public class SpaceClassExportTask implements DistributedTask<SerialList, List<St
 								typeBuilder.addIndex(spaceIndex);
 							} catch (IllegalArgumentException iae) {
 								logger.warning("registerTypeDescriptor" + iae.getMessage());
+								logger.warning("registerTypeDescriptor" + spaceIndex.toString());
 							}
 						}
 					}
 				}
-				// this is not needed and not being written
-//				typeBuilder.addFixedProperty(propertyName, (String) propertyMap.get(propertyName));
+				else {
+/*
+					if (type.isConcreteType()) {
+						if (! propertyName.equals(ROUTING) && ! propertyName.equals(SPACEID)) {
+							// this might be needed for POJOs
+							typeBuilder.addFixedProperty(propertyName, (Class<?>) typeMap.get(propertyName));
+						}
+					}
+*/
+				}
 			}
 		    // Register type:
 		    space.getTypeManager().registerTypeDescriptor(typeBuilder.create());
@@ -547,25 +680,43 @@ public class SpaceClassExportTask implements DistributedTask<SerialList, List<St
 				try {
 					className = input.readUTF();
 					Integer objectCount = input.readInt();
+					// we don't need this value as the array will tell us how many it contains
+//					Integer batchCount = input.readInt();
+					
+//					logger.info(className + " : " + objectCount + "/" + batchCount);
 					String typeName = null;
 					
-					if (className.equals(DOCUMENT))
-						// read in the type descriptor data
+					if (className.equals(DOCUMENT)) {
+						// read in the type name
 						typeName = input.readUTF();
-					// we could serialize *all* type descriptors
+						// we log classname, so set it up to reflect the space document type
+						className = typeName + " (" + className + ")";		
+					}
 					else 
 						typeName = className;
 
-					SerialMap propertyMap = (SerialMap) input.readObject();
-					registerTypeDescriptor(typeName, propertyMap);
-					// we log classname, so set it up to reflect the space document type
-					className = typeName + " (" + className + ")";		
+					// read in the type descriptor data and register it
+//					SerialMap propertyMap = (SerialMap) input.readObject();
+//					registerTypeDescriptor(typeName, propertyMap);
 
+					SpaceTypeDescriptor typeDescriptor = (SpaceTypeDescriptor) input.readObject(); 
+					space.getTypeManager().registerTypeDescriptor(typeDescriptor);
+					
 					logger.info("found " + objectCount + " instances of " + className);
 					lines.add("found " + objectCount + " instances of " + className);
 					
-					List<Object> objectList = new ArrayList<Object>();
+//					List<Object> objectList = new ArrayList<Object>();
 					Long start = System.currentTimeMillis();
+					
+					int c = 0;
+					while (c < objectCount) {
+						// read arrays in  
+						Object[] objects = (Object[]) input.readObject();
+						space.writeMultiple(objects);
+						c += objects.length;
+					}
+					
+/*					
 					for (int o = 0; o < objectCount; o++) {
 						objectList.add(input.readObject());
 						if (o > 0 && (o % batch == 0 || o + 1 == objectCount)) {
@@ -573,6 +724,7 @@ public class SpaceClassExportTask implements DistributedTask<SerialList, List<St
 							if (o + 1 < objectCount) objectList.clear();
 						}
 					}
+*/					
 					Long duration = (System.currentTimeMillis() - start);
 					logger.info("import operation took " + duration + " millis");
 					lines.add("import operation took " + duration + " millis");

@@ -5,14 +5,15 @@ import java.util.ArrayList;
 
 public class SerialList extends ArrayList<String> implements Serializable {
 	
-	public SerialList() {
-		
-	}
 
+	private static final long serialVersionUID = -6812619647418772605L;
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -6812619647418772605L;
+
+	public SerialList() {
+		
+	}
 
 	@Override
 	public boolean add(String e) {

@@ -22,20 +22,16 @@ public class SerialAudit extends SerialList implements Serializable {
 
 	@Override
 	public boolean add(String e) {
-
 		String p = (partition > 0 ? "/pid-" + partition : "");
-		
 		return super.add("(tid-" + Thread.currentThread().getId()  + p + ") : " + e);
 	}
 
 	public boolean add(String e, boolean thread) {
-
 		return super.add(e);
 	}
 
 	@Override
 	public void add(int index, String element) {
-
 		super.add(index, Thread.currentThread().getId() + " : " + element);
 	}
 
@@ -46,5 +42,8 @@ public class SerialAudit extends SerialList implements Serializable {
 	public void setPartition(Integer partition) {
 		this.partition = partition;
 	}
-
+	
+	public void getThreadData(Thread thread) {		
+		ThreadGroup threadGroup = thread.getThreadGroup();
+	}
 }
