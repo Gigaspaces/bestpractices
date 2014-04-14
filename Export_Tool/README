@@ -1,0 +1,1 @@
+With this tool we will demonstrate how to export data from a space via serializing it to a file. We can then re-import the data back into the space. The tool executes distributed tasks in ‘preprocess’ mode, which reads the serialization files and returns a de-duplicated list of the classes only.
