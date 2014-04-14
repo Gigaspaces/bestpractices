@@ -30,11 +30,6 @@
             <artifactId>gs-openspaces</artifactId>
             <version>${gsVersion}</version>
         </dependency>
-        <dependency>
-            <groupId>xap.poc</groupId>
-            <artifactId>common</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
     </dependencies>
 
 </project>

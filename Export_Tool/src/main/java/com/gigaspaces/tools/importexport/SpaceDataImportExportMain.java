@@ -16,6 +16,9 @@ import org.springframework.dao.DataAccessException;
 import com.gigaspaces.async.AsyncFuture;
 
 /**
+ * This tool demonstrates how to export data from a space by serializing
+ * it to a file. We can then re-import the data back into the space.
+ *
  * @author jb
  *
  */
@@ -101,7 +104,11 @@ public class SpaceDataImportExportMain {
 
 		return spaceUrl;
 	}
-	
+
+    /**
+     * Initializes the app
+     * @param args
+     */
 	public void init(String[] args) {
 		
 		for (int a = 0; a < args.length; a++) {
