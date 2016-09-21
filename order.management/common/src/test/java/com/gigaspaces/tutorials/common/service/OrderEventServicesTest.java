@@ -15,23 +15,23 @@ import static org.testng.Assert.assertNotNull;
 
 @ContextConfiguration
 public class OrderEventServicesTest extends AbstractTestNGSpringContextTests {
-  @Autowired
-  OrderEventService service;
-  @Autowired
-  OrderEventDAO dao;
+    @Autowired
+    OrderEventService service;
+    @Autowired
+    OrderEventDAO dao;
 
-  @Test
-  public void testOrderEventService() {
-    OrderEvent event = new OrderEventBuilder()
-                       .id("1234")
-                       .status(Status.NEW)
-                       .username("hash")
-                       .operation(Operation.BUY)
-                       .price("100")
-                       .build();
-    service.post(event);
-    OrderEvent e = dao.readById("1234");
-    assertEquals(event, e);
-    assertNotNull(event.getLastUpdateTime());
-  }
+    @Test
+    public void testOrderEventService() {
+        OrderEvent event = new OrderEventBuilder()
+                           .id("1234")
+                           .status(Status.NEW)
+                           .username("hash")
+                           .operation(Operation.BUY)
+                           .price("100")
+                           .build();
+        service.post(event);
+        OrderEvent e = dao.readById("1234");
+        assertEquals(event, e);
+        assertNotNull(event.getLastUpdateTime());
+    }
 }

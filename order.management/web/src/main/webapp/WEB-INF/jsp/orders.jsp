@@ -13,7 +13,7 @@
     <c:forEach var="orderEvent" items="${orderEvents}">
         <tr>
             <td>${orderEvent.id}</td>
-            <td>${orderEvent.userName}</td>
+            <td>${orderEvent.username}</td>
             <td>${orderEvent.price}</td>
             <td>${orderEvent.operation}</td>
             <td>${orderEvent.status}</td>

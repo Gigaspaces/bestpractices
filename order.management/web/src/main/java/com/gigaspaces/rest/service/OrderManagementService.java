@@ -4,7 +4,7 @@ import com.gigaspaces.tutorials.common.model.AccountData;
 import com.gigaspaces.tutorials.common.model.OrderEvent;
 
 public interface OrderManagementService {
-  OrderEvent[] getOrderEvents();
+    OrderEvent[] getOrderEvents();
 
-  AccountData[] getAccountData();
+    AccountData[] getAccountData();
 }

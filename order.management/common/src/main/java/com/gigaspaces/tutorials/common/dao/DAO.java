@@ -3,15 +3,15 @@ package com.gigaspaces.tutorials.common.dao;
 import java.io.Serializable;
 
 public interface DAO<T extends Serializable> {
-  T write(T object);
+    T write(T object);
 
-  T readById(String id);
+    T readById(String id);
 
-  T takeById(String id, long timeout);
+    T takeById(String id, long timeout);
 
-  T[] readMultiple(T template);
+    T[] readMultiple(T template);
 
-  T[] readMultiple(String query);
+    T[] readMultiple(String query);
 
-  T read(T template, int timeout);
+    T read(T template, int timeout);
 }

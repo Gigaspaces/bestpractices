@@ -8,16 +8,16 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class OrderEventServiceImpl implements OrderEventService {
-  @Autowired
-  OrderEventDAO dao;
+    @Autowired
+    OrderEventDAO dao;
 
-  @Override
-  public void post(OrderEvent orderEvent) {
-    dao.write(orderEvent);
-  }
+    @Override
+    public void post(OrderEvent orderEvent) {
+        dao.write(orderEvent);
+    }
 
-  @Override
-  public OrderEvent[] getAllOrderEvents() {
-    return dao.readMultiple("order by lastUpdateTime");
-  }
+    @Override
+    public OrderEvent[] getAllOrderEvents() {
+        return dao.readMultiple("order by lastUpdateTime");
+    }
 }

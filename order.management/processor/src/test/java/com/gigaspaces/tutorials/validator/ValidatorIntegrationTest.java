@@ -20,48 +20,48 @@ import static org.testng.Assert.assertNotNull;
 
 @ContextConfiguration
 public class ValidatorIntegrationTest extends AbstractTestNGSpringContextTests {
-  @Autowired
-  AccountDataService accountService;
-  @Autowired
-  OrderEventService orderService;
-  @Autowired
-  OrderEventDAO dao;
+    @Autowired
+    AccountDataService accountService;
+    @Autowired
+    OrderEventService orderService;
+    @Autowired
+    OrderEventDAO dao;
 
-  @BeforeMethod
-  public void setupData() {
-    AccountData data = new AccountDataBuilder().username("1234").balance(100).build();
-    System.out.println(accountService);
-    accountService.save(data);
-  }
+    @BeforeMethod
+    public void setupData() {
+        AccountData data = new AccountDataBuilder().username("1234").balance(100).build();
+        System.out.println(accountService);
+        accountService.save(data);
+    }
 
-  @Test
-  public void testEventHandling() {
-    OrderEvent event = new OrderEventBuilder()
-                       .id("1234")
-                       .username("1234")
-                       .status(Status.NEW)
-                       .operation(Operation.BUY)
-                       .price(12)
-                       .build();
-    orderService.post(event);
-    OrderEvent template = new OrderEventBuilder()
-                          .status(Status.PENDING).build();
-    OrderEvent processedEvent = dao.read(template, 1000);
-    assertNotNull(processedEvent);
-    assertEquals(Status.PENDING, processedEvent.getStatus());
+    @Test
+    public void testEventHandling() {
+        OrderEvent event = new OrderEventBuilder()
+                           .id("1234")
+                           .username("1234")
+                           .status(Status.NEW)
+                           .operation(Operation.BUY)
+                           .price(12)
+                           .build();
+        orderService.post(event);
+        OrderEvent template = new OrderEventBuilder()
+                              .status(Status.PENDING).build();
+        OrderEvent processedEvent = dao.read(template, 1000);
+        assertNotNull(processedEvent);
+        assertEquals(Status.PENDING, processedEvent.getStatus());
 
-    event = new OrderEventBuilder()
-            .id("1234")
-            .username("1235")
-            .status(Status.NEW)
-            .operation(Operation.BUY)
-            .price(12)
-            .build();
-    orderService.post(event);
-    template = new OrderEventBuilder()
-               .status(Status.ACCOUNT_NOT_FOUND).build();
-    processedEvent = dao.read(template, 1000);
-    assertNotNull(processedEvent);
-    assertEquals(Status.ACCOUNT_NOT_FOUND, processedEvent.getStatus());
-  }
+        event = new OrderEventBuilder()
+                .id("1234")
+                .username("1235")
+                .status(Status.NEW)
+                .operation(Operation.BUY)
+                .price(12)
+                .build();
+        orderService.post(event);
+        template = new OrderEventBuilder()
+                   .status(Status.ACCOUNT_NOT_FOUND).build();
+        processedEvent = dao.read(template, 1000);
+        assertNotNull(processedEvent);
+        assertEquals(Status.ACCOUNT_NOT_FOUND, processedEvent.getStatus());
+    }
 }

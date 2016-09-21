@@ -9,19 +9,19 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class OrderManagementServiceImpl implements OrderManagementService {
-  @Autowired
-  OrderEventService orderEventService;
+    @Autowired
+    OrderEventService orderEventService;
 
-  @Autowired
-  AccountDataService accountDataService;
+    @Autowired
+    AccountDataService accountDataService;
 
-  @Override
-  public OrderEvent[] getOrderEvents() {
-    return orderEventService.getAllOrderEvents();
-  }
+    @Override
+    public OrderEvent[] getOrderEvents() {
+        return orderEventService.getAllOrderEvents();
+    }
 
-  @Override
-  public AccountData[] getAccountData() {
-    return accountDataService.getAllAccountData();
-  }
+    @Override
+    public AccountData[] getAccountData() {
+        return accountDataService.getAllAccountData();
+    }
 }

@@ -12,18 +12,18 @@ import static org.testng.Assert.assertTrue;
 
 @ContextConfiguration
 public class AccountServicesTest extends AbstractTestNGSpringContextTests {
-  @Autowired
-  AccountDataService service;
+    @Autowired
+    AccountDataService service;
 
-  @Test
-  public void testAccountService() {
-    AccountData data = new AccountDataBuilder()
+    @Test
+    public void testAccountService() {
+        AccountData data = new AccountDataBuilder()
                        .username("1234")
                        .balance("123")
                        .build();
-    service.save(data);
-    assertTrue(service.accountExists("1234"));
-    AccountData d = service.load("1234", 1000);
-    assertEquals(d, data);
-  }
+        service.save(data);
+        assertTrue(service.accountExists("1234"));
+        AccountData d = service.load("1234", 1000);
+        assertEquals(d, data);
+    }
 }

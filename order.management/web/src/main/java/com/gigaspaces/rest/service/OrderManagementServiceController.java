@@ -7,16 +7,16 @@ import org.springframework.web.servlet.ModelAndView;
 
 @Controller
 public class OrderManagementServiceController {
-  @Autowired
-  OrderManagementService service;
+    @Autowired
+    OrderManagementService service;
 
-  @RequestMapping(value = "/orders/*")
-  public ModelAndView getAllOrders() {
-    return new ModelAndView("orders", "orderEvents", service.getOrderEvents());
-  }
+    @RequestMapping(value = "/orders/*")
+    public ModelAndView getAllOrders() {
+        return new ModelAndView("orders", "orderEvents", service.getOrderEvents());
+    }
 
-  @RequestMapping(value = "/accounts/*")
-  public ModelAndView getAllAccounts() {
-    return new ModelAndView("accounts", "accountData", service.getAccountData());
-  }
+    @RequestMapping(value = "/accounts/*")
+    public ModelAndView getAllAccounts() {
+        return new ModelAndView("accounts", "accountData", service.getAccountData());
+    }
 }

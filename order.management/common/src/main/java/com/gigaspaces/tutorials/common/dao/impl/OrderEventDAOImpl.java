@@ -7,9 +7,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class OrderEventDAOImpl extends AbstractDAO<OrderEvent> implements OrderEventDAO {
-  @Override
-  public OrderEvent write(OrderEvent object) {
-    object.setLastUpdateTime(System.currentTimeMillis());
-    return super.write(object);
-  }
+    @Override
+    public OrderEvent write(OrderEvent object) {
+        object.setLastUpdateTime(System.currentTimeMillis());
+        return super.write(object);
+    }
 }
