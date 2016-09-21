@@ -16,61 +16,61 @@ import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 
 public class ProcessorTest {
-  @Test
-  public void testProcessor() {
-    AccountData data = new AccountDataBuilder()
-                       .username("1234")
-                       .balance("100")
-                       .build();
-    AccountDataService service = mock(AccountDataService.class);
+    @Test
+    public void testProcessor() {
+        AccountData data = new AccountDataBuilder()
+                           .username("1234")
+                           .balance("100")
+                           .build();
+        AccountDataService service = mock(AccountDataService.class);
 
-    when(service.accountExists("1234")).thenReturn(true);
-    when(service.load("1234", 1000)).thenReturn(data);
+        when(service.accountExists("1234")).thenReturn(true);
+        when(service.load("1234", 1000)).thenReturn(data);
 
-    Processor processor = new Processor();
-    processor.service = service;
-    OrderEvent event = new OrderEventBuilder()
-                       .id("1234")
-                       .username("1234")
-                       .status(Status.NEW)
-                       .operation(Operation.BUY)
-                       .price("12")
-                       .build();
-    OrderEvent newEvent = processor.handleEvent(event);
-    assertEquals(newEvent.getStatus(), Status.PROCESSED);
-    assertEquals(data.getBalance(), new BigDecimal("88"));
+        Processor processor = new Processor();
+        processor.service = service;
+        OrderEvent event = new OrderEventBuilder()
+                           .id("1234")
+                           .username("1234")
+                           .status(Status.NEW)
+                           .operation(Operation.BUY)
+                           .price("12")
+                           .build();
+        OrderEvent newEvent = processor.handleEvent(event);
+        assertEquals(newEvent.getStatus(), Status.PROCESSED);
+        assertEquals(data.getBalance(), new BigDecimal("88"));
 
-    event = new OrderEventBuilder()
-            .id("1234")
-            .username("1234")
-            .status(Status.NEW)
-            .operation(Operation.SELL)
-            .price("12")
-            .build();
-    newEvent = processor.handleEvent(event);
-    assertEquals(newEvent.getStatus(), Status.PROCESSED);
-    assertEquals(data.getBalance(), new BigDecimal("100"));
+        event = new OrderEventBuilder()
+                .id("1234")
+                .username("1234")
+                .status(Status.NEW)
+                .operation(Operation.SELL)
+                .price("12")
+                .build();
+        newEvent = processor.handleEvent(event);
+        assertEquals(newEvent.getStatus(), Status.PROCESSED);
+        assertEquals(data.getBalance(), new BigDecimal("100"));
 
-    event = new OrderEventBuilder()
-            .id("1234")
-            .username("1234")
-            .status(Status.NEW)
-            .operation(Operation.BUY)
-            .price("112")
-            .build();
-    newEvent = processor.handleEvent(event);
-    assertEquals(newEvent.getStatus(), Status.INSUFFICIENT_FUNDS);
-    assertEquals(data.getBalance(), new BigDecimal("100"));
+        event = new OrderEventBuilder()
+                .id("1234")
+                .username("1234")
+                .status(Status.NEW)
+                .operation(Operation.BUY)
+                .price("112")
+                .build();
+        newEvent = processor.handleEvent(event);
+        assertEquals(newEvent.getStatus(), Status.INSUFFICIENT_FUNDS);
+        assertEquals(data.getBalance(), new BigDecimal("100"));
 
 
-    event = new OrderEventBuilder()
-            .id("1235")
-            .username("1235")
-            .status(Status.NEW)
-            .operation(Operation.BUY)
-            .price(12)
-            .build();
-    newEvent = processor.handleEvent(event);
-    assertEquals(newEvent.getStatus(), Status.ACCOUNT_NOT_FOUND);
-  }
+        event = new OrderEventBuilder()
+                .id("1235")
+                .username("1235")
+                .status(Status.NEW)
+                .operation(Operation.BUY)
+                .price(12)
+                .build();
+        newEvent = processor.handleEvent(event);
+        assertEquals(newEvent.getStatus(), Status.ACCOUNT_NOT_FOUND);
+    }
 }

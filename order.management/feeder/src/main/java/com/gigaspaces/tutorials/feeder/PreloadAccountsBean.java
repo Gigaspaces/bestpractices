@@ -10,19 +10,19 @@ import javax.annotation.PostConstruct;
 
 @Service
 public class PreloadAccountsBean {
-  @Autowired
-  AccountDataService service;
+    @Autowired
+    AccountDataService service;
 
-  @PostConstruct
-  public void loadAccounts() {
-    for (int i = 0; i < 1000; i++) {
-      if (!service.accountExists("USER " + i)) {
-        AccountData account = new AccountDataBuilder()
+    @PostConstruct
+    public void loadAccounts() {
+        for (int i = 0; i < 1000; i++) {
+            if (!service.accountExists("USER " + i)) {
+                AccountData account = new AccountDataBuilder()
                               .username("USER " + i)
                               .balance(100)
                               .build();
-        service.save(account);
-      }
+                service.save(account);
+            }
+        }
     }
-  }
 }

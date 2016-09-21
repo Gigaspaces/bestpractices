@@ -19,44 +19,44 @@ import java.math.BigDecimal;
 @EventDriven
 @Polling
 public class Processor {
-  @Autowired
-  AccountDataService service;
+    @Autowired
+    AccountDataService service;
 
-  Logger logger = LoggerFactory.getLogger(this.getClass());
+    Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  private final static BigDecimal NEGATIVE_ONE = new BigDecimal("-1");
+    private final static BigDecimal NEGATIVE_ONE = new BigDecimal("-1");
 
-  @EventTemplate
-  OrderEvent getTemplate() {
-    return new OrderEventBuilder().status(Status.PENDING).build();
-  }
-
-  @SpaceDataEvent
-  OrderEvent handleEvent(OrderEvent event) {
-    AccountData data = service.load(event.getUserName(), 1000);
-    if (data == null) {
-      event.setStatus(Status.ACCOUNT_NOT_FOUND);
-      // early exit, bad account managed to get in
-      if (logger.isInfoEnabled()) {
-        logger.info("Order processed: " + event);
-      }
-      return event;
+    @EventTemplate
+    OrderEvent getTemplate() {
+        return new OrderEventBuilder().status(Status.PENDING).build();
     }
-    BigDecimal change = event.getPrice().multiply(event.getOperation().equals(Operation.BUY)
-                                                  ? NEGATIVE_ONE : BigDecimal.ONE);
-    if (data.getBalance().add(change).compareTo(BigDecimal.ZERO) == -1) {
-      event.setStatus(Status.INSUFFICIENT_FUNDS);
-    } else {
-      data.setBalance(data.getBalance().add(change));
-      event.setStatus(Status.PROCESSED);
-      if (logger.isInfoEnabled()) {
-        logger.info("Account changed: " + data);
-      }
-      service.save(data);
+
+    @SpaceDataEvent
+    OrderEvent handleEvent(OrderEvent event) {
+        AccountData data = service.load(event.getUsername(), 1000);
+        if (data == null) {
+            event.setStatus(Status.ACCOUNT_NOT_FOUND);
+            // early exit, bad account managed to get in
+            if (logger.isInfoEnabled()) {
+                logger.info("Order processed: " + event);
+            }
+            return event;
+        }
+        BigDecimal change = event.getPrice().multiply(event.getOperation().equals(Operation.BUY)
+                                                      ? NEGATIVE_ONE : BigDecimal.ONE);
+        if (data.getBalance().add(change).compareTo(BigDecimal.ZERO) == -1) {
+            event.setStatus(Status.INSUFFICIENT_FUNDS);
+        } else {
+            data.setBalance(data.getBalance().add(change));
+            event.setStatus(Status.PROCESSED);
+            if (logger.isInfoEnabled()) {
+                logger.info("Account changed: " + data);
+            }
+            service.save(data);
+        }
+        if (logger.isInfoEnabled()) {
+            logger.info("Order processed: " + event);
+        }
+        return event;
     }
-    if (logger.isInfoEnabled()) {
-      logger.info("Order processed: " + event);
-    }
-    return event;
-  }
 }

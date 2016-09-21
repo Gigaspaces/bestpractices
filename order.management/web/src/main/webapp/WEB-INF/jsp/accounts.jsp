@@ -10,7 +10,7 @@
 <table border="1">
     <c:forEach var="accountDatum" items="${accountData}">
         <tr>
-            <td>${accountDatum.userName}</td>
+            <td>${accountDatum.username}</td>
             <td>${accountDatum.balance}</td>
         </tr>
     </c:forEach>
